@@ -478,10 +478,13 @@ The live site is a **fresh install plus the seeder**. The local database is not 
 
 **One-time setup in the alwaysdata admin panel**
 
-1. Use a separate account (or a separate site and docroot) from any other WordPress site. The installer refuses to run if `~/www` already holds another theme or a `wp-config.php` for a different database.
-2. *Databases → MySQL*: create a database named `<account>_nova`.
-3. *Web → Sites*: the default site at `https://<account>.alwaysdata.net` with root `www/` and PHP 8.4 is fine.
-4. *Remote access → SSH*: enable password login, or add your SSH key.
+1. *Databases → MySQL*: create a database named `<account>_nova`, and give the `<account>` user all rights on it.
+2. *Web → Sites*:
+   - **Empty account:** the default site at `https://<account>.alwaysdata.net`, with root `www/` and PHP 8.4, is fine.
+   - **Account that already hosts a site in `www/`:** add a new site with its own address, root directory `nova/` and PHP 8.4, then deploy with `DOCROOT=nova SITE_URL=https://<that address>`. The site must be at the root of its address (not `/nova` under another site's address), because the permalinks assume `/`.
+3. *Remote access → SSH*: enable password login, or add your SSH key.
+
+The installer refuses to run if its root directory already holds another theme, or a `wp-config.php` for a different database, so it cannot overwrite an existing site.
 
 **One-time password files on the server** (mode 600, never in the repo or on a command line):
 
@@ -493,7 +496,7 @@ printf '%s' 'YOUR_DB_PASSWORD' | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 0
 printf '%s' 'YOUR_ADMIN_PASSWORD' | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 077; cat > ~/.adminpass'
 ```
 
-Start these lines with a space so most shells keep them out of history. `~/.adminpass` is only read on the first install and can be deleted afterwards.
+Start these lines with a space so most shells keep them out of history. `~/.adminpass` is only read on the first install and can be deleted afterwards. If another site on the account already created `~/.dbpass` for the same database user, it can be reused.
 
 **Deploy (first time and every update):**
 
@@ -501,7 +504,7 @@ Start these lines with a space so most shells keep them out of history. `~/.admi
 ALWAYSDATA_ACCOUNT=ACCOUNT ADMIN_EMAIL=you@example.com ./deploy/alwaysdata-push.sh
 ```
 
-Optional variables: `SITE_URL` (a custom domain), `DB_NAME` (if not `<account>_nova`), `ADMIN_USER` (default `admin`). Later pushes only replace the theme and plugin code. The catalog is seeded on the first run only; add `RESEED=1` to reset products, prices and stock to the demo values.
+Optional variables: `SITE_URL` (the site's address), `DOCROOT` (root directory under your home, default `www`), `DB_NAME` (if not `<account>_nova`), `ADMIN_USER` (default `admin`). Later pushes only replace the theme and plugin code. The catalog is seeded on the first run only; add `RESEED=1` to reset products, prices and stock to the demo values.
 
 **What the installer sets up for alwaysdata**
 
