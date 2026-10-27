@@ -83,6 +83,12 @@ class REST_Featured_Products {
 				// No custom callbacks: core's rest_parse_request_arg() validates the
 				// schema above (rejects "abc", -5, 999) and then casts to int.
 			),
+			'lang'     => array(
+				'description' => __( 'Response language. Defaults to the visitor\'s saved choice, then English.', 'nova-store-core' ),
+				'type'        => 'string',
+				'enum'        => array_keys( Languages::available() ),
+				// Read by Languages::current() before WordPress loads translations.
+			),
 			'category' => array(
 				'description'       => __( 'Limit to a product category slug.', 'nova-store-core' ),
 				'type'              => 'string',
@@ -126,7 +132,8 @@ class REST_Featured_Products {
 		$per_page = (int) $request->get_param( 'per_page' );
 		$category = (string) $request->get_param( 'category' );
 
-		$cache_key = self::cache_prefix() . md5( $per_page . '|' . $category );
+		// Names, descriptions and formatted prices differ per language, so cache per locale.
+		$cache_key = self::cache_prefix() . md5( $per_page . '|' . $category . '|' . get_locale() );
 		$data      = get_transient( $cache_key );
 
 		if ( false === $data ) {
@@ -173,6 +180,7 @@ class REST_Featured_Products {
 
 		return array(
 			'count'    => count( $products ),
+			'language' => Languages::current(),
 			'currency' => get_woocommerce_currency(),
 			'products' => $products,
 		);
@@ -215,6 +223,10 @@ class REST_Featured_Products {
 			'type'       => 'object',
 			'properties' => array(
 				'count'    => array( 'type' => 'integer' ),
+				'language' => array(
+					'type' => 'string',
+					'enum' => array_keys( Languages::available() ),
+				),
 				'currency' => array( 'type' => 'string' ),
 				'products' => array(
 					'type'  => 'array',
