@@ -2,7 +2,9 @@
 
 A premium tech-accessories store built the WordPress way: a **custom classic theme** (`nova-store`) for presentation and a **custom plugin** (`nova-store-core`) for business logic, on top of stock **WordPress 7.1.3** and **WooCommerce 11.2.1**. It runs in Docker.
 
-- Storefront: <http://localhost:8090>
+The storefront is **bilingual: English and Arabic (العربية)**, with a full right-to-left layout. Visitors switch language from the header; the admin stays in English.
+
+- Storefront: <http://localhost:8090> (English) · <http://localhost:8090/?lang=ar> (Arabic)
 - Admin: <http://localhost:8090/wp-admin>. The user is `admin`, and the password is the one you set in `.env`.
 - Public API: <http://localhost:8090/wp-json/nova-store/v1/featured-products>
 
@@ -19,14 +21,15 @@ A premium tech-accessories store built the WordPress way: a **custom classic the
 5. [Architecture](#architecture)
 6. [Custom hooks](#custom-hooks)
 7. [REST endpoint](#rest-endpoint)
-8. [Security decisions](#security-decisions)
-9. [Sample data](#sample-data)
-10. [Testing checklist](#testing-checklist)
-11. [Code quality](#code-quality)
-12. [Troubleshooting](#troubleshooting)
-13. [Interview walkthrough](#interview-walkthrough)
-14. [Known limitations](#known-limitations)
-15. [Image credits](#image-credits)
+8. [Languages (English / العربية)](#languages-english--العربية)
+9. [Security decisions](#security-decisions)
+10. [Sample data](#sample-data)
+11. [Testing checklist](#testing-checklist)
+12. [Code quality](#code-quality)
+13. [Troubleshooting](#troubleshooting)
+14. [Interview walkthrough](#interview-walkthrough)
+15. [Known limitations](#known-limitations)
+16. [Image credits](#image-credits)
 
 ---
 
@@ -57,13 +60,15 @@ The script is idempotent, so you can re-run it safely. It does the following:
 1. Starts MariaDB and WordPress (`docker compose up -d`).
 2. Installs WordPress core and sets pretty permalinks (`/%postname%/`, which `/wp-json/` needs).
 3. Installs **WooCommerce 11.2.1** from wordpress.org (version pinned) and activates it. It also deletes the unused Hello Dolly and Akismet plugins.
-4. Activates the `nova-store` theme and the `nova-store-core` plugin.
-5. Runs `seed/seed.php`, which:
+4. Installs the official **Arabic language packs** for WordPress core and WooCommerce (`wp language core|plugin install … ar`). They are installed but not activated: the site language stays English, and the plugin switches the storefront per visitor.
+5. Activates the `nova-store` theme and the `nova-store-core` plugin.
+6. Runs `seed/seed.php`, which:
    - sets the store options and turns off WooCommerce's *coming soon* mode;
    - enables COD only;
    - sets up shipping: free over $99, otherwise $9.95;
    - creates the pages and switches cart/checkout to classic shortcodes;
-   - adds 5 categories, 19 products with images, and the menus.
+   - adds 5 categories, 19 products with images, and the menus;
+   - writes the Arabic copy of every product, category and page (from `seed/translations-ar.php`).
 
 Then open <http://localhost:8090>.
 
@@ -99,28 +104,38 @@ To reset everything, run `docker compose down -v` and then `./bin/setup.sh`. **`
 .
 ├── docker-compose.yml          # db (MariaDB 11.8) · wordpress (7.1.3, PHP 8.3) · wpcli (profile "cli")
 ├── .env.example                # placeholders only; real .env is git-ignored
-├── bin/setup.sh                # idempotent bootstrap (WP-CLI)
+├── bin/
+│   ├── setup.sh                # idempotent bootstrap (WP-CLI)
+│   ├── i18n.sh                 # rebuild .pot → Arabic .po → .mo for theme + plugin
+│   └── po-fill.py              # merges Arabic strings into a .po (used by i18n.sh)
 ├── seed/
 │   ├── seed.php                # store config + catalog, matched by SKU (re-runnable)
+│   ├── translations-ar.php     # Arabic catalog content: products, categories, pages
+│   ├── translations-strings-ar.py  # Arabic interface strings (source for the .po files)
 │   └── images/                 # product photos (Unsplash License)
 ├── composer.json / phpcs.xml.dist   # WPCS 3 + PHPCompatibilityWP dev tooling
 └── wp-content/
     ├── themes/nova-store/      # PRESENTATION
     │   ├── style.css           # theme header
     │   ├── functions.php       # supports, menus, asset enqueueing
-    │   ├── inc/template-tags.php   # icons, cart link, category helpers
+    │   ├── inc/template-tags.php   # icons, cart link, category helpers, language switcher
     │   ├── inc/woocommerce.php     # WooCommerce layout via hooks (no template copies)
     │   ├── header.php · footer.php · front-page.php · page.php · index.php · 404.php
     │   ├── template-parts/home/    # hero, values, categories, products row, promo
-    │   └── assets/{css,js,img}
+    │   ├── languages/              # nova-store.pot, ar.po, ar.mo
+    │   └── assets/{css,js,img}     # main.css uses CSS logical properties (works LTR and RTL)
     └── plugins/nova-store-core/    # BUSINESS LOGIC
         ├── nova-store-core.php     # bootstrap, HPOS compatibility, WooCommerce dependency check
         ├── includes/
+        │   ├── class-languages.php           # language detection (?lang / cookie), locale filter, hreflang
+        │   ├── class-content-translation.php # swaps in Arabic product/page/category content
+        │   ├── class-translation-admin.php   # "Arabic translation" fields in wp-admin
         │   ├── class-settings.php          # WooCommerce → NOVA Store settings (Settings API)
         │   ├── class-delivery.php          # free-shipping threshold + dispatch-date rules
         │   ├── class-product-hooks.php     # product page / label hooks
         │   ├── class-checkout-hooks.php    # checkout validation + order meta
         │   └── class-rest-featured-products.php
+        ├── languages/                  # nova-store-core.pot, nova-store-core-ar.po/.mo
         ├── templates/trust-block.php
         └── assets/css/nova-store-core.css
 ```
@@ -133,8 +148,8 @@ Only the theme and plugin folders are bind-mounted into the container. WordPress
 Browser ──► Apache/PHP 8.3 (wordpress container)
               ├── WordPress core 7.1.3        (untouched, Docker volume)
               ├── WooCommerce 11.2.1          (untouched, installed by WP-CLI)
-              ├── nova-store-core plugin      (rules, hooks, REST, settings)
-              └── nova-store theme            (templates, CSS/JS, layout hooks)
+              ├── nova-store-core plugin      (rules, hooks, REST, settings, language switching)
+              └── nova-store theme            (templates, CSS/JS, layout hooks, RTL styles)
                          │
                          ▼
                    MariaDB 11.8 (db container, not exposed to the host)
@@ -171,6 +186,11 @@ All of these are in `wp-content/plugins/nova-store-core/includes/`. Every hook w
 | 7 | `woocommerce_order_details_after_order_table` | action | Thank-you page and My Account → order | Shows the customer "Estimated dispatch: …". |
 | 8 | `woocommerce_admin_order_data_after_shipping_address` | action | Admin order edit screen | Shows the dispatch date and sales channel to staff. |
 | 9 | `nova_store_free_shipping_threshold` | custom filter | Theme header, values strip | Decouples the theme from the plugin. |
+| 10 | `locale` | filter (core) | Every storefront request, registered before WordPress loads translations | Returns `ar` or `en_US` for the visitor's language, so core, WooCommerce, the theme and the plugin all load matching translations and WordPress turns on RTL. Admin screens are skipped. |
+| 11 | `nova_store_languages` | custom filter | Theme header and mobile menu | Gives the theme the switcher data (name, URL, current) without calling plugin code. |
+| 12 | `woocommerce_cart_fragment_name` | filter | Cart fragments (AJAX header cart) | Adds the language to the fragment cache key, so the header never shows the other language's cart text. |
+
+The content filters used for Arabic (`the_title`, `the_content`, `woocommerce_product_get_name`, `get_product_cat`, …) are listed under [Languages](#languages-english--العربية).
 
 The plugin also uses `rest_api_init`, `before_woocommerce_init` (HPOS compatibility declaration), `admin_menu`, `admin_init`, `admin_post_*`, and the `woocommerce_*product*` save/stock actions for cache invalidation.
 
@@ -184,6 +204,7 @@ GET /wp-json/nova-store/v1/featured-products
 |---|---|---|---|
 | `per_page` | integer | 4 | 1–12. Anything else → **400** |
 | `category` | string | — | Must be an existing `product_cat` slug, else **400** |
+| `lang` | string | visitor's saved choice, then `en` | `en` or `ar`. Anything else → **400** |
 
 **Implementation**
 
@@ -194,6 +215,7 @@ GET /wp-json/nova-store/v1/featured-products
 - Only `GET` is registered. Any other method → **404 `rest_no_route`**.
 - Responses are cached in transients for 10 minutes and sent with `Cache-Control: public, max-age=300` and `X-WP-Total`.
 - The cache is invalidated when a product is created, updated, deleted, or changes stock or visibility. Admins can also clear it from **WooCommerce → NOVA Store**.
+- The cache key includes the locale, so English and Arabic responses are cached separately. Each response has a `language` field.
 
 **Try it**
 
@@ -236,6 +258,87 @@ That returns `HTTP/1.1 400 Bad Request`. Other examples:
 - `?per_page=abc` → 400 (`rest_invalid_param`).
 - `?category=nope` → 400.
 - `?category=audio` → featured audio products only.
+- `?lang=ar` → product names in Arabic, `"language": "ar"`.
+- `?lang=fr` → 400.
+
+```bash
+curl -s "http://localhost:8090/wp-json/nova-store/v1/featured-products?per_page=1&lang=ar" | python3 -m json.tool
+```
+
+## Languages (English / العربية)
+
+The storefront runs in English or Arabic. Arabic uses a full right-to-left layout and an Arabic font. The admin is not affected.
+
+### How the language is chosen
+
+For each storefront request, `Languages::current()` in `class-languages.php` picks the language in this order:
+
+1. `?lang=en` or `?lang=ar` in the URL. Links can be shared, and this also works on the REST API.
+2. Otherwise, the `nova_lang` cookie from an earlier choice. It is set when a visitor uses `?lang=`, and it lasts 1 year (HttpOnly, SameSite=Lax, Secure on HTTPS).
+3. Otherwise, English.
+
+Unknown values are ignored. The result goes to WordPress through the core `locale` filter. That filter is registered when the plugin file loads, before WordPress loads its translations, so one switch covers everything:
+
+| Text | Where the Arabic comes from |
+|---|---|
+| WordPress core and WooCommerce screens (cart, checkout, account, notices, e-mails) | Official language packs from translate.wordpress.org, installed by `setup.sh` |
+| Theme strings (header, footer, home page sections) | `wp-content/themes/nova-store/languages/ar.mo` |
+| Plugin strings (trust block, stock labels, checkout error, order meta, API) | `wp-content/plugins/nova-store-core/languages/nova-store-core-ar.mo` |
+| Product, category and page content | Arabic copy saved in meta, swapped in by `Content_Translation` |
+| Store settings (shipping method names, COD texts, tagline) | Listed as gettext strings in `Content_Translation::translate_store_string()`, so the Arabic lives in the plugin `.po` |
+
+`is_admin()` requests always keep the site or user locale, so staff see wp-admin in English even with the Arabic cookie.
+
+### Switcher and SEO
+
+- The theme prints the switcher with `nova_store_language_switcher()` in the header, and inside the mobile menu on small screens. It gets its data from the `nova_store_languages` filter.
+- Switcher URLs are built from the configured `home_url()` plus the request path, never from the `Host` header.
+- On public pages the plugin prints `<link rel="alternate" hreflang="en|ar|x-default">`. Cart, checkout, account and 404 pages are skipped because they are private or not indexable.
+
+### Translated content
+
+`Content_Translation` only registers when the request is Arabic. For each item it uses the Arabic value when one exists, and falls back to English when it is empty.
+
+| Data | Stored in | Filters |
+|---|---|---|
+| Product / page title | post meta `_nova_ar_title` | `the_title`, `single_post_title` (browser tab), `woocommerce_product_get_name` (cart, checkout, orders, API), `nav_menu_item_title` |
+| Product short description | `_nova_ar_excerpt` | `woocommerce_short_description`, `woocommerce_product_get_short_description` |
+| Product description / page content | `_nova_ar_content` | `the_content` (priority 1, so blocks and shortcodes still run), `woocommerce_product_get_description` |
+| "Additional information" table | `_nova_ar_attributes` (English label → Arabic label + value) | `woocommerce_display_product_attributes` |
+| Category name and description | term meta `_nova_ar_name`, `_nova_ar_description` | `get_product_cat`, `nav_menu_item_title` |
+| Shipping labels, COD texts, tagline | gettext | `woocommerce_shipping_rate_label`, `option_woocommerce_cod_settings`, `option_blogdescription` |
+
+**Editing Arabic content in the admin.**
+
+- Products and pages have an **Arabic translation (العربية)** box under the editor, with title, short description (products only) and description/content fields.
+- **Products → Categories** has *Arabic name* and *Arabic description* fields.
+- Leave a field empty to show the English version.
+- Saving a product also clears the REST cache.
+
+### RTL design
+
+- `main.css` uses CSS logical properties (`margin-inline-start`, `padding-inline`, `inset-inline-end`, `text-align: start`, …), so one stylesheet works both ways. WordPress adds `dir="rtl"` to `<html>` automatically.
+- On Arabic pages the theme adds **IBM Plex Sans Arabic** from Google Fonts. Latin text keeps Inter/Manrope.
+- Arrow icons are mirrored. Prices, SKUs, phone and e-mail inputs stay left-to-right, so numbers read correctly.
+- Uppercase and letter-spacing are turned off for Arabic text, because Arabic has no capitals and spacing breaks the joined letters.
+
+### Updating translations
+
+Interface strings live in `seed/translations-strings-ar.py`: the `THEME` and `PLUGIN` dictionaries map English → Arabic. Plural strings use a `(singular, plural)` key and a list of the 6 Arabic plural forms. After you add or change a translatable string in PHP:
+
+```bash
+./bin/i18n.sh
+```
+
+The script:
+
+1. extracts the strings to `.pot` files with `wp i18n make-pot` (inside Docker);
+2. fills the Arabic `.po` files with `bin/po-fill.py`;
+3. compiles the `.mo` files with `msgfmt -c`, which checks placeholders and plural forms and prints the translated/untranslated counts. The untranslated plugin strings are admin-only, on purpose.
+
+It needs the stack running, plus `python3` and GNU `gettext` on the host. Catalog content is edited in `seed/translations-ar.php` (then re-seed) or directly in the admin.
+
+To add another language: add it to `Languages::available()`, install its language packs in `setup.sh`, add a strings file and `.po`/`.mo` pair, and add meta fields for its content.
 
 ## Security decisions
 
@@ -248,7 +351,9 @@ That returns `HTTP/1.1 400 Bad Request`. Other examples:
 | Nonces + capabilities | The settings form uses `settings_fields()` (nonce) and `options.php` verifies it. The capability is mapped to `manage_woocommerce` via `option_page_capability_*`. The cache-flush action uses `wp_nonce_field` + `check_admin_referer` + `current_user_can`. Tested: a bad nonce → 403, and an anonymous request is refused. |
 | Database | Only WordPress/WooCommerce APIs: `wc_get_products`, CRUD objects, options and transients. No raw SQL anywhere. |
 | Orders | Meta is written via `WC_Order::update_meta_data()`, and HPOS compatibility is declared. Nothing touches totals, payment or stock. |
-| Public API | GET only, allow-listed fields, bounded `per_page`, no customer/order/config data. |
+| Public API | GET only, allow-listed fields, bounded `per_page`, `lang` limited to an enum, no customer/order/config data. |
+| Language switch | `?lang` and the `nova_lang` cookie are checked against the list of supported languages (`sanitize_key` + allow-list), so nothing else reaches the `locale` filter. It is a display preference with no side effects, so it has no nonce (like a currency switcher). The cookie is HttpOnly and SameSite=Lax. Switcher links use `home_url()`, not the `Host` header. |
+| Arabic content fields | Saved only with a valid nonce and `current_user_can( 'edit_post' / 'edit_term' )`. Titles go through `sanitize_text_field`, content through `wp_kses_post`; output is escaped again. Tested: a bad nonce left the data unchanged, and `<script>` was stripped on save. |
 | Payments | COD only. No card fields and no gateway credentials. |
 | Dependencies | WordPress 7.1.3, WooCommerce 11.2.1 (latest at build time), PHP 8.3, MariaDB 11.8. No other plugins are installed. |
 
@@ -276,7 +381,10 @@ This project has **not** been through a professional security audit. Before goin
 Each product also gets:
 
 - a SKU, a short description in bullets, a long description and an "Additional information" attributes table;
-- a `total_sales` value, so the popularity sort is meaningful.
+- a `total_sales` value, so the popularity sort is meaningful;
+- an Arabic title, short description, description and attributes table.
+
+Categories, the cart, checkout, my-account and *Shipping & Returns* pages also get Arabic versions.
 
 To add products by hand, go to **Products → Add New** in the admin. Set the price, then on the *Inventory* tab enable "Manage stock" and enter a quantity. Featured status is the ★ in the product list.
 
@@ -309,6 +417,15 @@ These are the checks run for this build. Re-run them after any change.
 - [ ] `featured-products` returns 200 with `count` / `products`.
 - [ ] `per_page=999`, `per_page=abc` and `category=nope` each return 400.
 - [ ] A `POST` returns 404.
+
+**Languages**
+- [ ] The header switcher shows *العربية*. Clicking it reloads the same page in Arabic, right-to-left, with the Arabic font.
+- [ ] Arabic home, shop, category and product pages show Arabic names, descriptions, attributes, breadcrumbs, trust block and stock labels ("بقيت قطعتان فقط" on *Dock Pro*).
+- [ ] The cart, shipping labels, checkout, COD texts and the phone error are in Arabic. An Arabic order shows the dispatch date in Arabic on *Order received*.
+- [ ] The choice is remembered on the next page without `?lang`. Switching back to English works the same way.
+- [ ] At 375 px the switcher is inside the mobile menu, and the RTL page never scrolls sideways.
+- [ ] wp-admin stays English with the Arabic cookie, and the *Arabic translation* box saves.
+- [ ] API: `lang=ar` returns Arabic names, `lang=fr` returns 400.
 
 **Admin settings**
 - [ ] **WooCommerce → NOVA Store** saves; out-of-range values are clamped.
@@ -356,6 +473,8 @@ There are no automated PHPUnit or E2E tests. Verification was done manually with
 | Re-running the seeder reset my stock or prices | That is intentional: the seeder restores the canonical demo catalog. |
 | WooCommerce e-mails are not delivered | The stack has no mail server. Order e-mails fail silently and orders are still created. Add Mailpit/SMTP if you need them. |
 | `Warning: Regenerating a .htaccess file requires special configuration` during setup | Harmless. The WordPress image already ships the standard rewrite rules. |
+| Arabic page still shows English text | Check the field is filled in the *Arabic translation* box (empty fields fall back to English). For interface strings, run `./bin/i18n.sh` and check the "untranslated" count it prints. |
+| Language keeps switching back | The choice is stored in the `nova_lang` cookie. Use the switcher or `?lang=en` / `?lang=ar`; clearing cookies resets to English. |
 | Want to start over | `docker compose down -v && ./bin/setup.sh`. **This deletes the database and uploads.** |
 
 ## Interview walkthrough
@@ -395,7 +514,12 @@ This is roughly a 5-minute tour.
    - There is no raw SQL, no secrets in git, the DB is not exposed, and payment is COD only.
    - It is **not** production-audited, and I can list what's missing (see above).
 
-7. **Admin (30 s).** Show that the store is run natively:
+7. **Languages (45 s).** Click *العربية* in the header.
+   - One `locale` filter, registered before WordPress loads translations, switches core, WooCommerce, theme and plugin. The page turns RTL by itself.
+   - Interface strings come from `.po`/`.mo` files; catalog content comes from meta with English fallback; the CSS uses logical properties, so there is no separate RTL stylesheet.
+   - Show the *Arabic translation* box on a product, and `?lang=ar` on the API.
+
+8. **Admin (30 s).** Show that the store is run natively:
    - Products → edit a price or stock quantity, then show the storefront and API update (the cache is invalidated by hook).
    - WooCommerce → Orders.
    - WooCommerce → NOVA Store settings.
@@ -407,6 +531,11 @@ This is roughly a 5-minute tour.
 - Products are simple products. Variable products (colour/size) are supported by the code (for example the sale badge handles them), but none are seeded.
 - No product reviews or ratings are seeded.
 - Fonts load from Google Fonts. Self-host them for GDPR-strict deployments.
+- Languages use `?lang` plus a cookie, not separate URLs such as `/ar/`. Search engines only see the Arabic version through the `hreflang` links with `?lang=ar`. A plugin such as Polylang or WPML would be the next step for SEO-heavy sites.
+- Order line items keep the product name in the language the customer ordered in. Staff see that name in the admin.
+- The Arabic "Additional information" table is filled by the seeder only; there is no admin field for it yet.
+- Admin-only plugin strings (settings page, meta boxes) are not translated, because the admin stays English.
+- WooCommerce e-mails would use the language of the request that sends them, but no mail server is configured, so this is untested.
 - HPOS compatibility is declared and the code only uses CRUD APIs. This install runs on legacy post storage (HPOS was off after a WP-CLI install), and HPOS mode was not separately exercised.
 
 ## Image credits
