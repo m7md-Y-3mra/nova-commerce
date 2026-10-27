@@ -1473,8 +1473,11 @@ textarea:focus,
 	text-align: center;
 }
 
-.woocommerce-cart .cart-empty.woocommerce-info {
+.woocommerce-cart .wc-empty-cart-message {
 	order: 2;
+}
+
+.woocommerce-cart .cart-empty.woocommerce-info {
 	border: 0;
 	background: transparent;
 	padding: 0;
@@ -1516,6 +1519,7 @@ textarea:focus,
 
 .woocommerce-checkout form.checkout > .woocommerce-NoticeGroup {
 	grid-column: 1 / -1;
+	grid-row: 1; /* Row 1 is empty (zero height) until WooCommerce injects errors. */
 }
 
 .woocommerce-checkout form.checkout #customer_details {
@@ -1528,19 +1532,19 @@ textarea:focus,
 }
 
 .woocommerce-checkout form.checkout #order_review_heading {
-	grid-row: 1;
+	grid-row: 2;
 	margin: 0 0 1rem;
 	font-size: 1.3rem;
 }
 
 .woocommerce-checkout form.checkout #order_review {
-	grid-row: 2 / span 3;
+	grid-row: 3 / span 3;
 	position: sticky;
 	top: calc(var(--header-h) + 24px);
 }
 
 .woocommerce-checkout form.checkout #customer_details {
-	grid-row: 1 / span 4;
+	grid-row: 2 / span 4;
 }
 
 .woocommerce-checkout #customer_details .col-1,
@@ -1874,6 +1878,13 @@ textarea:focus,
 
 	body.nav-open {
 		overflow: hidden;
+	}
+
+	/* backdrop-filter would make the header the containing block of the fixed panel. */
+	body.nav-open .site-header {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+		background: var(--bg);
 	}
 
 	.hero-inner {
