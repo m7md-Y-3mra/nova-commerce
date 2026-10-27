@@ -65,6 +65,7 @@ $nova_threshold = nova_store_free_shipping_threshold();
 				)
 			);
 			?>
+			<?php nova_store_language_switcher( 'nav' ); ?>
 			<div class="site-nav__search">
 				<?php
 				if ( function_exists( 'get_product_search_form' ) ) {
@@ -75,6 +76,7 @@ $nova_threshold = nova_store_free_shipping_threshold();
 		</nav>
 
 		<div class="header-actions">
+			<?php nova_store_language_switcher( 'header' ); ?>
 			<?php if ( function_exists( 'get_product_search_form' ) ) : ?>
 				<div class="header-search">
 					<?php get_product_search_form(); ?>

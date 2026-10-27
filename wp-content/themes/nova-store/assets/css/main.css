@@ -108,7 +108,7 @@ p {
 	width: auto;
 	z-index: 1000;
 	top: 8px;
-	left: 8px;
+	inset-inline-start: 8px;
 	padding: 10px 16px;
 	background: var(--ink);
 	color: #fff;
@@ -234,7 +234,7 @@ p {
 .woocommerce a.button.loading,
 .woocommerce button.button.loading {
 	opacity: 0.75;
-	padding-right: 2.6rem;
+	padding-inline-end: 2.6rem;
 	position: relative;
 }
 
@@ -243,7 +243,7 @@ p {
 	content: "";
 	position: absolute;
 	top: 50%;
-	right: 1rem;
+	inset-inline-end: 1rem;
 	width: 14px;
 	height: 14px;
 	margin-top: -7px;
@@ -257,7 +257,7 @@ p {
 .woocommerce a.button.added::after {
 	content: "✓";
 	font-family: inherit;
-	margin-left: 0.4rem;
+	margin-inline-start: 0.4rem;
 	vertical-align: baseline;
 }
 
@@ -321,13 +321,13 @@ textarea:focus,
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
 	line-height: 1.6;
-	padding-left: 0;
+	padding-inline-start: 0;
 	color: var(--ink);
 }
 
 .select2-container--default .select2-selection--single .select2-selection__arrow {
 	height: 44px;
-	right: 8px;
+	inset-inline-end: 8px;
 }
 
 .woocommerce form .form-row label {
@@ -358,7 +358,7 @@ textarea:focus,
 }
 
 .woocommerce-product-search input[type="search"] {
-	padding-right: 3rem;
+	padding-inline-end: 3rem;
 	border-radius: 999px;
 	min-height: 42px;
 	background: var(--surface);
@@ -366,7 +366,7 @@ textarea:focus,
 
 .woocommerce-product-search button {
 	position: absolute;
-	right: 4px;
+	inset-inline-end: 4px;
 	top: 4px;
 	bottom: 4px;
 	padding: 0 0.9rem;
@@ -448,6 +448,7 @@ textarea:focus,
 .primary-menu a {
 	display: block;
 	padding: 0.5rem 0.8rem;
+	white-space: nowrap;
 	border-radius: 999px;
 	font-size: 0.93rem;
 	font-weight: 500;
@@ -471,12 +472,12 @@ textarea:focus,
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
-	margin-left: auto;
+	margin-inline-start: auto;
 }
 
 .header-search {
 	width: 240px;
-	margin-right: 0.5rem;
+	margin-inline-end: 0.5rem;
 }
 
 .header-action {
@@ -502,7 +503,7 @@ textarea:focus,
 .nova-cart-count {
 	position: absolute;
 	top: 4px;
-	right: 2px;
+	inset-inline-end: 2px;
 	min-width: 18px;
 	height: 18px;
 	padding: 0 5px;
@@ -679,8 +680,8 @@ textarea:focus,
 .category-card__label {
 	position: absolute;
 	z-index: 1;
-	left: 1rem;
-	right: 1rem;
+	inset-inline-start: 1rem;
+	inset-inline-end: 1rem;
 	bottom: 1rem;
 }
 
@@ -775,7 +776,7 @@ textarea:focus,
 	display: flex;
 	flex-direction: column;
 	position: relative;
-	text-align: left;
+	text-align: start;
 }
 
 .woocommerce ul.products li.product a.woocommerce-LoopProduct-link {
@@ -901,7 +902,7 @@ textarea:focus,
 	color: var(--muted);
 	opacity: 1;
 	font-weight: 400;
-	margin-right: 0.35rem;
+	margin-inline-end: 0.35rem;
 }
 
 .woocommerce .price ins {
@@ -914,8 +915,8 @@ textarea:focus,
 .woocommerce span.onsale,
 .woocommerce ul.products li.product .onsale {
 	top: 0.75rem;
-	left: 0.75rem;
-	right: auto;
+	inset-inline-start: 0.75rem;
+	inset-inline-end: auto;
 	min-width: 0;
 	min-height: 0;
 	margin: 0;
@@ -1027,7 +1028,7 @@ textarea:focus,
 .woocommerce .woocommerce-ordering select {
 	min-height: 42px;
 	width: auto;
-	padding-right: 2rem;
+	padding-inline-end: 2rem;
 	border-radius: 999px;
 }
 
@@ -1074,18 +1075,19 @@ textarea:focus,
 .woocommerce-error,
 .woocommerce-notices-wrapper .wc-block-components-notice-banner {
 	border: 1px solid var(--line);
-	border-left-width: 4px;
+	border-inline-start-width: 4px;
 	border-radius: var(--radius-sm);
 	background: var(--surface);
 	color: var(--ink);
-	padding: 1rem 1.25rem 1rem 3rem;
+	padding-block: 1rem;
+	padding-inline: 3rem 1.25rem;
 	margin: 0 0 1.5rem;
 	font-size: 0.95rem;
 	box-shadow: none;
 }
 
 .woocommerce-message {
-	border-left-color: var(--success);
+	border-inline-start-color: var(--success);
 }
 
 .woocommerce-message::before {
@@ -1093,7 +1095,7 @@ textarea:focus,
 }
 
 .woocommerce-info {
-	border-left-color: var(--accent);
+	border-inline-start-color: var(--accent);
 }
 
 .woocommerce-info::before {
@@ -1101,7 +1103,7 @@ textarea:focus,
 }
 
 .woocommerce-error {
-	border-left-color: var(--danger);
+	border-inline-start-color: var(--danger);
 }
 
 .woocommerce-error::before {
@@ -1158,7 +1160,7 @@ textarea:focus,
 	justify-self: start;
 	position: relative;
 	top: 1rem;
-	left: 1rem;
+	inset-inline-start: 1rem;
 	z-index: 3;
 }
 
@@ -1187,7 +1189,7 @@ textarea:focus,
 
 .woocommerce div.product div.images .woocommerce-product-gallery__trigger {
 	top: 1rem;
-	right: 1rem;
+	inset-inline-end: 1rem;
 	background: var(--surface);
 	box-shadow: var(--shadow);
 }
@@ -1213,7 +1215,7 @@ textarea:focus,
 }
 
 .woocommerce div.product .woocommerce-product-details__short-description ul {
-	padding-left: 1.1rem;
+	padding-inline-start: 1.1rem;
 	margin: 0.75rem 0 0;
 }
 
@@ -1408,7 +1410,7 @@ textarea:focus,
 .woocommerce-cart table.cart td.actions .coupon .input-text {
 	width: 180px;
 	min-height: 46px;
-	margin-right: 0.5rem;
+	margin-inline-end: 0.5rem;
 	border-radius: 999px;
 }
 
@@ -1495,7 +1497,7 @@ textarea:focus,
 
 .woocommerce-cart .empty-cart-suggestions {
 	order: 4;
-	text-align: left;
+	text-align: start;
 	margin-top: 3.5rem;
 }
 
@@ -1617,7 +1619,7 @@ textarea:focus,
 	padding: 1.25rem 1.5rem;
 	background: var(--surface);
 	border: 1px solid var(--line);
-	border-left: 4px solid var(--success);
+	border-inline-start: 4px solid var(--success);
 	border-radius: var(--radius-sm);
 }
 
@@ -1787,6 +1789,108 @@ textarea:focus,
 	gap: 0.4rem;
 }
 
+/* ---------- Language switcher ---------- */
+
+.lang-switch {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.15rem;
+	padding: 3px;
+	margin-inline-end: 0.35rem;
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	background: var(--surface);
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1;
+}
+
+.lang-switch__item {
+	display: inline-flex;
+	align-items: center;
+	min-height: 30px;
+	padding: 0 0.7rem;
+	border-radius: 999px;
+	text-decoration: none;
+	color: var(--muted);
+	transition: background-color 0.15s, color 0.15s;
+}
+
+a.lang-switch__item:hover {
+	color: var(--ink);
+	background: var(--surface-2);
+}
+
+.lang-switch__item.is-current {
+	background: var(--ink);
+	color: #fff;
+}
+
+.lang-switch--nav {
+	display: none;
+	align-self: flex-start;
+	margin: 0;
+	font-size: 0.95rem;
+}
+
+.lang-switch--nav .lang-switch__item {
+	min-height: 38px;
+	padding: 0 1.1rem;
+}
+
+/* ---------- Arabic / RTL ---------- */
+
+/* Arabic script needs its own face; Inter/Manrope stay as Latin fallbacks for prices and SKUs. */
+html[lang^="ar"] {
+	--font-body: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
+	--font-display: "IBM Plex Sans Arabic", "Manrope", system-ui, sans-serif;
+}
+
+/* Negative tracking and uppercase are Latin conventions that break Arabic letter joining. */
+html[lang^="ar"] h1,
+html[lang^="ar"] h2,
+html[lang^="ar"] h3,
+html[lang^="ar"] h4,
+html[lang^="ar"] .hero-title,
+html[lang^="ar"] .eyebrow,
+html[lang^="ar"] .footer-title,
+html[lang^="ar"] .product-card__cat,
+html[lang^="ar"] .woocommerce table.shop_table th {
+	letter-spacing: 0;
+	text-transform: none;
+}
+
+html[lang^="ar"] .hero-title {
+	line-height: 1.2;
+}
+
+html[lang^="ar"] body {
+	line-height: 1.75;
+}
+
+/* Directional icons point the reading direction. */
+[dir="rtl"] .icon-arrow {
+	transform: scaleX(-1);
+}
+
+[dir="rtl"] .link-arrow:hover .icon-arrow {
+	transform: scaleX(-1) translateX(3px);
+}
+
+/* Keep prices, SKUs and phone numbers in left-to-right order inside Arabic text. */
+[dir="rtl"] .woocommerce-Price-amount,
+[dir="rtl"] .sku,
+[dir="rtl"] input[type="tel"],
+[dir="rtl"] input[type="email"] {
+	direction: ltr;
+	unicode-bidi: isolate;
+}
+
+[dir="rtl"] input[type="tel"],
+[dir="rtl"] input[type="email"] {
+	text-align: end;
+}
+
 /* ==========================================================================
    Responsive
    ========================================================================== */
@@ -1794,6 +1898,15 @@ textarea:focus,
 @media (max-width: 1100px) {
 	.header-search {
 		display: none;
+	}
+
+	.header-inner {
+		gap: 1rem;
+	}
+
+	.primary-menu a {
+		padding-inline: 0.55rem;
+		font-size: 0.88rem;
 	}
 
 	/* Five categories never split evenly; switch to a swipeable row. */
@@ -1833,7 +1946,7 @@ textarea:focus,
 	}
 
 	.header-actions {
-		margin-left: 0;
+		margin-inline-start: 0;
 	}
 
 	.site-nav {
@@ -1874,6 +1987,15 @@ textarea:focus,
 	.site-nav__search {
 		display: block;
 		order: -1;
+	}
+
+	.lang-switch--nav {
+		display: inline-flex;
+		order: -2;
+	}
+
+	.lang-switch--header {
+		display: none;
 	}
 
 	body.nav-open {

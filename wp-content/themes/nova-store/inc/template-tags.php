@@ -125,3 +125,27 @@ function nova_store_get_product_categories( $number = 0 ) {
 	);
 	return is_wp_error( $terms ) ? array() : $terms;
 }
+
+/**
+ * Language switcher. Data comes from the nova-store-core plugin via the
+ * `nova_store_languages` filter; without the plugin nothing is rendered.
+ *
+ * @param string $context CSS modifier, e.g. "header" or "nav".
+ */
+function nova_store_language_switcher( $context = 'header' ) {
+	$languages = apply_filters( 'nova_store_languages', array() );
+	if ( ! is_array( $languages ) || count( $languages ) < 2 ) {
+		return;
+	}
+	?>
+	<nav class="lang-switch lang-switch--<?php echo esc_attr( $context ); ?>" aria-label="<?php esc_attr_e( 'Language', 'nova-store' ); ?>">
+		<?php foreach ( $languages as $nova_lang ) : ?>
+			<?php if ( ! empty( $nova_lang['current'] ) ) : ?>
+				<span class="lang-switch__item is-current" lang="<?php echo esc_attr( $nova_lang['hreflang'] ); ?>" aria-current="true"><?php echo esc_html( $nova_lang['native'] ); ?></span>
+			<?php else : ?>
+				<a class="lang-switch__item" href="<?php echo esc_url( $nova_lang['url'] ); ?>" hreflang="<?php echo esc_attr( $nova_lang['hreflang'] ); ?>" lang="<?php echo esc_attr( $nova_lang['hreflang'] ); ?>"><?php echo esc_html( $nova_lang['native'] ); ?></a>
+			<?php endif; ?>
+		<?php endforeach; ?>
+	</nav>
+	<?php
+}

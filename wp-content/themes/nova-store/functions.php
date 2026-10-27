@@ -70,9 +70,15 @@ function nova_store_enqueue_assets() {
 	$dir = get_template_directory();
 	$uri = get_template_directory_uri();
 
+	// Arabic pages add IBM Plex Sans Arabic; Latin text (prices, SKUs) keeps Inter/Manrope.
+	$families = 'family=Inter:wght@400;500;600&family=Manrope:wght@500;600;700;800';
+	if ( is_rtl() ) {
+		$families .= '&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700';
+	}
+
 	wp_enqueue_style(
 		'nova-store-fonts',
-		'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@500;600;700;800&display=swap',
+		'https://fonts.googleapis.com/css2?' . $families . '&display=swap',
 		array(),
 		null // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Google Fonts URL is versioned by its query.
 	);
