@@ -20,7 +20,8 @@ DB_NAME="${DB_NAME:-${ACCOUNT}_nova}"
 DB_USER="${DB_USER:-${ACCOUNT}}"
 DB_HOST="${DB_HOST:-mysql-${ACCOUNT}.alwaysdata.net}"
 ADMIN_USER="${ADMIN_USER:-admin}"
-WWW="${WWW:-$HOME/www}"
+DOCROOT="${DOCROOT:-www}" # site root directory, relative to $HOME
+WWW="${WWW:-$HOME/$DOCROOT}"
 SRC="${SRC:-$HOME/nova-src}"
 WP_BIN="${WP_BIN:-$HOME/bin/wp}"
 
