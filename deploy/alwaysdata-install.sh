@@ -99,10 +99,15 @@ if [[ ! -f "$WWW/wp-config.php" ]]; then
 	chmod 600 "$WWW/wp-config.php"
 fi
 
+# URL path the site lives under: "" for https://host, "/nova" for https://host/nova.
+URL_PATH="$(php -r 'echo rtrim( (string) parse_url( $argv[1], PHP_URL_PATH ), "/" );' "$SITE_URL")"
+
 if [[ ! -f "$WWW/.htaccess" ]]; then
 	echo "==> .htaccess"
 	# `wp rewrite flush --hard` cannot write it here, and without it every permalink 404s.
-	cat > "$WWW/.htaccess" <<'HTACCESS'
+	# In a sub-folder this file also replaces the parent site's rewrite rules
+	# (mod_rewrite does not inherit them), so /nova/... never reaches the parent WordPress.
+	cat > "$WWW/.htaccess" <<HTACCESS
 # Force HTTPS. TLS ends at the proxy, so test the forwarded header, not %{HTTPS}.
 RewriteEngine On
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
@@ -112,11 +117,11 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-RewriteBase /
+RewriteBase ${URL_PATH}/
 RewriteRule ^index\.php$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.php [L]
+RewriteRule . ${URL_PATH}/index.php [L]
 </IfModule>
 # END WordPress
 HTACCESS

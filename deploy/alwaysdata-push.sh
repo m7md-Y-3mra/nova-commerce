@@ -4,8 +4,8 @@
 #
 #   ALWAYSDATA_ACCOUNT=myaccount ADMIN_EMAIL=you@example.com ./deploy/alwaysdata-push.sh
 #
-# Second site on an account that already hosts one in ~/www:
-#   ALWAYSDATA_ACCOUNT=myaccount DOCROOT=nova SITE_URL=https://nova.example.com ADMIN_EMAIL=... ./deploy/alwaysdata-push.sh
+# Beside an existing site in ~/www (free plan: one account, one address):
+#   ALWAYSDATA_ACCOUNT=myaccount DOCROOT=www/nova SITE_URL=https://myaccount.alwaysdata.net/nova ADMIN_EMAIL=... ./deploy/alwaysdata-push.sh
 #
 # One-time, before the first push (passwords go into mode-600 files on the server):
 #   printf '%s' 'DB_PASSWORD'    | ssh myaccount@ssh-myaccount.alwaysdata.net 'umask 077; cat > ~/.dbpass'
