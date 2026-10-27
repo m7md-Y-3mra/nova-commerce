@@ -4,8 +4,9 @@
 #   1. Starts the Docker stack (MariaDB + WordPress/Apache).
 #   2. Installs WordPress core and the pinned WooCommerce release via WP-CLI.
 #   3. Activates the nova-store theme and nova-store-core plugin.
-#   4. Configures WooCommerce (store details, COD only, shipping) and seeds
-#      categories, products, pages and the primary menu (seed/seed.php).
+#   4. Installs the Arabic language packs for WordPress and WooCommerce.
+#   5. Configures WooCommerce (store details, COD only, shipping) and seeds
+#      categories, products, pages and menus in English and Arabic (seed/seed.php).
 #
 # Safe to re-run: every step checks current state before changing anything.
 set -euo pipefail
@@ -83,6 +84,12 @@ if ! wp plugin is-installed woocommerce >/dev/null 2>&1; then
 else
 	wp plugin activate woocommerce >/dev/null
 fi
+
+echo "==> Arabic language packs (official translate.wordpress.org builds)"
+# Installed but not activated: the site language stays English and the
+# nova-store-core plugin switches the storefront per visitor.
+wp language core install ar >/dev/null
+wp language plugin install woocommerce ar >/dev/null
 
 echo "==> Theme and custom plugin"
 wp theme activate nova-store

@@ -23,6 +23,8 @@ require_once ABSPATH . 'wp-admin/includes/media.php';
 
 const NOVA_SEED_IMAGES = '/seed/images/';
 
+$nova_ar = require __DIR__ . '/translations-ar.php';
+
 // ----------------------------------------------------------------------
 // 1. Store settings
 // ----------------------------------------------------------------------
@@ -287,7 +289,11 @@ foreach ( $nova_categories as $nova_slug => list( $nova_name, $nova_desc, $nova_
 	update_term_meta( $nova_term_id, 'order', $nova_order++ );
 	$nova_term_ids[ $nova_slug ] = $nova_term_id;
 }
-WP_CLI::log( 'Categories ready.' );
+foreach ( $nova_ar['categories'] as $nova_slug => list( $nova_ar_name, $nova_ar_desc ) ) {
+	update_term_meta( $nova_term_ids[ $nova_slug ], '_nova_ar_name', $nova_ar_name );
+	update_term_meta( $nova_term_ids[ $nova_slug ], '_nova_ar_description', $nova_ar_desc );
+}
+WP_CLI::log( 'Categories ready (English + Arabic).' );
 
 // ----------------------------------------------------------------------
 // 7. Products
@@ -648,8 +654,9 @@ $nova_products = array(
  * @param array $data       Row from $nova_products.
  * @param int   $menu_order Sort position.
  * @param array $term_ids   Category slug => term ID.
+ * @param array $ar         Arabic copy: title, bullets, content, attributes.
  */
-function nova_seed_product( $data, $menu_order, $term_ids ) {
+function nova_seed_product( $data, $menu_order, $term_ids, $ar = array() ) {
 	list( $sku, $name, $cat, $regular, $sale, $featured, $qty, $sales, $img, $bullets, $desc, $attrs ) = $data;
 
 	$product_id = wc_get_product_id_by_sku( $sku );
@@ -696,11 +703,19 @@ function nova_seed_product( $data, $menu_order, $term_ids ) {
 	}
 
 	$product->save();
+	if ( $ar ) {
+		$id = $product->get_id();
+		update_post_meta( $id, '_nova_ar_title', $ar['title'] );
+		update_post_meta( $id, '_nova_ar_excerpt', '<ul><li>' . implode( '</li><li>', array_map( 'esc_html', $ar['bullets'] ) ) . '</li></ul>' );
+		update_post_meta( $id, '_nova_ar_content', '<p>' . esc_html( $ar['content'] ) . '</p>' );
+		update_post_meta( $id, '_nova_ar_attributes', $ar['attributes'] );
+	}
+
 	WP_CLI::log( sprintf( '  %s %s (#%d)', $product_id ? 'updated' : 'created', $name, $product->get_id() ) );
 }
 
 foreach ( $nova_products as $nova_index => $nova_p ) {
-	nova_seed_product( $nova_p, $nova_index, $nova_term_ids );
+	nova_seed_product( $nova_p, $nova_index, $nova_term_ids, $nova_ar['products'][ $nova_p[0] ] ?? array() );
 }
 
 // Category tiles use images already imported for products.
@@ -803,5 +818,25 @@ nova_seed_menu(
 	)
 );
 WP_CLI::log( 'Menus ready.' );
+
+// Arabic titles/content for store pages (WooCommerce pages are looked up by option, not slug).
+$nova_page_ids = array(
+	'shop'             => wc_get_page_id( 'shop' ),
+	'cart'             => wc_get_page_id( 'cart' ),
+	'checkout'         => wc_get_page_id( 'checkout' ),
+	'my-account'       => wc_get_page_id( 'myaccount' ),
+	'shipping-returns' => $nova_shipping_page,
+);
+foreach ( $nova_ar['pages'] as $nova_slug => list( $nova_ar_title, $nova_ar_content ) ) {
+	$nova_page_id = (int) ( $nova_page_ids[ $nova_slug ] ?? 0 );
+	if ( $nova_page_id <= 0 ) {
+		continue;
+	}
+	update_post_meta( $nova_page_id, '_nova_ar_title', $nova_ar_title );
+	if ( '' !== $nova_ar_content ) {
+		update_post_meta( $nova_page_id, '_nova_ar_content', $nova_ar_content );
+	}
+}
+WP_CLI::log( 'Arabic page titles ready.' );
 
 WP_CLI::success( 'NOVA Store demo data seeded.' );
