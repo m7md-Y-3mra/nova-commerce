@@ -23,38 +23,38 @@ require_once ABSPATH . 'wp-admin/includes/media.php';
 
 const NOVA_SEED_IMAGES = '/seed/images/';
 
-/* -------------------------------------------------------------------------
- * 1. Store settings
- * ---------------------------------------------------------------------- */
+// ----------------------------------------------------------------------
+// 1. Store settings
+// ----------------------------------------------------------------------
 
 $nova_options = array(
-	'woocommerce_store_address'          => '100 Market Street',
-	'woocommerce_store_city'             => 'San Francisco',
-	'woocommerce_default_country'        => 'US:CA',
-	'woocommerce_store_postcode'         => '94105',
-	'woocommerce_currency'               => 'USD',
-	'woocommerce_price_num_decimals'     => '2',
-	'woocommerce_calc_taxes'             => 'no',
-	'woocommerce_manage_stock'           => 'yes',
-	'woocommerce_notify_low_stock_amount' => '3',
+	'woocommerce_store_address'                => '100 Market Street',
+	'woocommerce_store_city'                   => 'San Francisco',
+	'woocommerce_default_country'              => 'US:CA',
+	'woocommerce_store_postcode'               => '94105',
+	'woocommerce_currency'                     => 'USD',
+	'woocommerce_price_num_decimals'           => '2',
+	'woocommerce_calc_taxes'                   => 'no',
+	'woocommerce_manage_stock'                 => 'yes',
+	'woocommerce_notify_low_stock_amount'      => '3',
 	// No mail server in the demo stack; skip admin stock e-mails.
-	'woocommerce_notify_low_stock'       => 'no',
-	'woocommerce_notify_no_stock'        => 'no',
-	'woocommerce_hide_out_of_stock_items' => 'no',
-	'woocommerce_enable_ajax_add_to_cart' => 'yes',
-	'woocommerce_cart_redirect_after_add' => 'no',
-	'woocommerce_enable_guest_checkout'  => 'yes',
-	'woocommerce_enable_reviews'         => 'yes',
-	'woocommerce_thumbnail_cropping'     => '1:1',
+	'woocommerce_notify_low_stock'             => 'no',
+	'woocommerce_notify_no_stock'              => 'no',
+	'woocommerce_hide_out_of_stock_items'      => 'no',
+	'woocommerce_enable_ajax_add_to_cart'      => 'yes',
+	'woocommerce_cart_redirect_after_add'      => 'no',
+	'woocommerce_enable_guest_checkout'        => 'yes',
+	'woocommerce_enable_reviews'               => 'yes',
+	'woocommerce_thumbnail_cropping'           => '1:1',
 	// New installs start in "coming soon" mode, which hides the shop from visitors.
-	'woocommerce_coming_soon'            => 'no',
-	'woocommerce_store_pages_only'       => 'no',
-	'woocommerce_allow_tracking'         => 'no',
+	'woocommerce_coming_soon'                  => 'no',
+	'woocommerce_store_pages_only'             => 'no',
+	'woocommerce_allow_tracking'               => 'no',
 	'woocommerce_show_marketplace_suggestions' => 'no',
-	'woocommerce_task_list_hidden'       => 'yes',
-	'woocommerce_task_list_complete'     => 'yes',
-	'blogname'                           => 'NOVA Store',
-	'blogdescription'                    => 'Premium tech accessories for focused work',
+	'woocommerce_task_list_hidden'             => 'yes',
+	'woocommerce_task_list_complete'           => 'yes',
+	'blogname'                                 => 'NOVA Store',
+	'blogdescription'                          => 'Premium tech accessories for focused work',
 );
 foreach ( $nova_options as $nova_key => $nova_value ) {
 	update_option( $nova_key, $nova_value );
@@ -62,9 +62,9 @@ foreach ( $nova_options as $nova_key => $nova_value ) {
 update_option( 'woocommerce_onboarding_profile', array( 'skipped' => true ) );
 WP_CLI::log( 'Store settings updated.' );
 
-/* -------------------------------------------------------------------------
- * 2. Payments: Cash on Delivery only (safe demo method, no credentials).
- * ---------------------------------------------------------------------- */
+// ----------------------------------------------------------------------
+// 2. Payments: Cash on Delivery only (safe demo method, no credentials).
+// ----------------------------------------------------------------------
 
 update_option(
 	'woocommerce_cod_settings',
@@ -84,9 +84,9 @@ foreach ( array( 'bacs', 'cheque', 'paypal' ) as $nova_gateway ) {
 }
 WP_CLI::log( 'Payment: Cash on delivery enabled, other gateways disabled.' );
 
-/* -------------------------------------------------------------------------
- * 3. Shipping: one worldwide zone, free over $99 else flat $9.95.
- * ---------------------------------------------------------------------- */
+// ----------------------------------------------------------------------
+// 3. Shipping: one worldwide zone, free over $99 else flat $9.95.
+// ----------------------------------------------------------------------
 
 $nova_zone    = new WC_Shipping_Zone( 0 ); // "Locations not covered by your other zones".
 $nova_methods = array();
@@ -102,10 +102,10 @@ if ( ! isset( $nova_methods['flat_rate'] ) ) {
 update_option(
 	'woocommerce_free_shipping_' . $nova_methods['free_shipping'] . '_settings',
 	array(
-		'title'                => 'Free shipping',
-		'requires'             => 'min_amount',
-		'min_amount'           => '99',
-		'ignore_discounts'     => 'no',
+		'title'            => 'Free shipping',
+		'requires'         => 'min_amount',
+		'min_amount'       => '99',
+		'ignore_discounts' => 'no',
 	)
 );
 update_option(
@@ -119,9 +119,9 @@ update_option(
 WC_Cache_Helper::get_transient_version( 'shipping', true );
 WP_CLI::log( 'Shipping: free over $99, otherwise $9.95.' );
 
-/* -------------------------------------------------------------------------
- * 4. Pages: WooCommerce pages (classic shortcodes), home, shipping info.
- * ---------------------------------------------------------------------- */
+// ----------------------------------------------------------------------
+// 4. Pages: WooCommerce pages (classic shortcodes), home, shipping info.
+// ----------------------------------------------------------------------
 
 WC_Install::create_pages();
 
@@ -178,7 +178,10 @@ $nova_shipping_page = nova_seed_page(
 );
 
 // Remove WordPress starter content so the demo looks like a real store.
-foreach ( array( 'hello-world' => 'post', 'sample-page' => 'page' ) as $nova_slug => $nova_type ) {
+foreach ( array(
+	'hello-world' => 'post',
+	'sample-page' => 'page',
+) as $nova_slug => $nova_type ) {
 	$nova_post = get_page_by_path( $nova_slug, OBJECT, $nova_type );
 	if ( $nova_post ) {
 		wp_delete_post( $nova_post->ID, true );
@@ -186,9 +189,9 @@ foreach ( array( 'hello-world' => 'post', 'sample-page' => 'page' ) as $nova_slu
 }
 WP_CLI::log( 'Pages ready (home, shop, cart, checkout, my account, shipping & returns).' );
 
-/* -------------------------------------------------------------------------
- * 5. Media helper
- * ---------------------------------------------------------------------- */
+// ----------------------------------------------------------------------
+// 5. Media helper
+// ----------------------------------------------------------------------
 
 /**
  * Import a bundled image once and return its attachment ID.
@@ -202,8 +205,8 @@ function nova_seed_image( $file, $alt ) {
 		array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
-			'meta_key'       => '_nova_seed_file', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_query_meta_key -- one-off CLI seeding.
-			'meta_value'     => $file, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_query_meta_value
+			'meta_key'       => '_nova_seed_file', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- one-off CLI seeding.
+			'meta_value'     => $file, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'fields'         => 'ids',
 			'posts_per_page' => 1,
 		)
@@ -241,9 +244,9 @@ function nova_seed_image( $file, $alt ) {
 	return (int) $id;
 }
 
-/* -------------------------------------------------------------------------
- * 6. Categories
- * ---------------------------------------------------------------------- */
+// ----------------------------------------------------------------------
+// 6. Categories
+// ----------------------------------------------------------------------
 
 $nova_categories = array(
 	'audio'         => array( 'Audio', 'Headphones, earbuds and speakers tuned for long listening sessions.', 'studio-pro-headphones.jpg' ),
@@ -258,10 +261,24 @@ $nova_order    = 0;
 foreach ( $nova_categories as $nova_slug => list( $nova_name, $nova_desc, $nova_img ) ) {
 	$nova_term = get_term_by( 'slug', $nova_slug, 'product_cat' );
 	if ( $nova_term ) {
-		wp_update_term( $nova_term->term_id, 'product_cat', array( 'name' => $nova_name, 'description' => $nova_desc ) );
+		wp_update_term(
+			$nova_term->term_id,
+			'product_cat',
+			array(
+				'name'        => $nova_name,
+				'description' => $nova_desc,
+			)
+		);
 		$nova_term_id = (int) $nova_term->term_id;
 	} else {
-		$nova_result = wp_insert_term( $nova_name, 'product_cat', array( 'slug' => $nova_slug, 'description' => $nova_desc ) );
+		$nova_result = wp_insert_term(
+			$nova_name,
+			'product_cat',
+			array(
+				'slug'        => $nova_slug,
+				'description' => $nova_desc,
+			)
+		);
 		if ( is_wp_error( $nova_result ) ) {
 			WP_CLI::error( $nova_result->get_error_message() );
 		}
@@ -272,115 +289,368 @@ foreach ( $nova_categories as $nova_slug => list( $nova_name, $nova_desc, $nova_
 }
 WP_CLI::log( 'Categories ready.' );
 
-/* -------------------------------------------------------------------------
- * 7. Products
- * ---------------------------------------------------------------------- */
+// ----------------------------------------------------------------------
+// 7. Products
+// ----------------------------------------------------------------------
 
 /*
  * sku, name, category, regular, sale, featured, stock qty (null = not managed, 0 = sold out),
  * total sales (drives "popularity" sort), image, short description bullets, description, attributes.
  */
 $nova_products = array(
-	array( 'NV-AUD-001', 'Aura ANC Wireless Headphones', 'audio', '249', '219', true, 24, 180, 'aura-anc-headphones.jpg',
+	array(
+		'NV-AUD-001',
+		'Aura ANC Wireless Headphones',
+		'audio',
+		'249',
+		'219',
+		true,
+		24,
+		180,
+		'aura-anc-headphones.jpg',
 		array( 'Adaptive noise cancelling with transparency mode', '40-hour battery, 10 min charge = 5 hours', 'Multipoint Bluetooth 5.3 with LDAC' ),
 		'Aura blocks out open-plan chatter and cabin hum without the pressure feeling of older ANC headphones. Memory-foam cushions and a 254 g frame mean you forget you are wearing them by mid-morning.',
-		array( 'Connectivity' => 'Bluetooth 5.3, USB-C audio', 'Battery life' => '40 hours (ANC on)', 'Weight' => '254 g' ),
+		array(
+			'Connectivity' => 'Bluetooth 5.3, USB-C audio',
+			'Battery life' => '40 hours (ANC on)',
+			'Weight'       => '254 g',
+		),
 	),
-	array( 'NV-AUD-002', 'Studio Pro Over-Ear Headphones', 'audio', '189', '', true, 15, 140, 'studio-pro-headphones.jpg',
+	array(
+		'NV-AUD-002',
+		'Studio Pro Over-Ear Headphones',
+		'audio',
+		'189',
+		'',
+		true,
+		15,
+		140,
+		'studio-pro-headphones.jpg',
 		array( 'Neutral studio tuning with 50 mm drivers', 'Detachable cable plus Bluetooth', 'Fold-flat design with hard case' ),
 		'A reference sound you can trust for mixing, editing or simply hearing music the way it was recorded. Wired for zero latency, wireless when you are on the move.',
-		array( 'Driver' => '50 mm dynamic', 'Connectivity' => 'Bluetooth 5.2, 3.5 mm', 'Weight' => '280 g' ),
+		array(
+			'Driver'       => '50 mm dynamic',
+			'Connectivity' => 'Bluetooth 5.2, 3.5 mm',
+			'Weight'       => '280 g',
+		),
 	),
-	array( 'NV-AUD-003', 'Reference Wired Headphones', 'audio', '99', '', false, 0, 95, 'reference-wired-headphones.jpg',
+	array(
+		'NV-AUD-003',
+		'Reference Wired Headphones',
+		'audio',
+		'99',
+		'',
+		false,
+		0,
+		95,
+		'reference-wired-headphones.jpg',
 		array( 'Open-back acoustic design', 'Replaceable velour ear pads', 'Low 32 Ω impedance, no amp needed' ),
 		'Lightweight, open-back and endlessly comfortable. The Reference is our most-loved wired headphone and is currently sold out while the next production run arrives.',
-		array( 'Impedance' => '32 Ω', 'Cable' => '1.8 m, 3.5 mm with 6.35 mm adapter', 'Weight' => '230 g' ),
+		array(
+			'Impedance' => '32 Ω',
+			'Cable'     => '1.8 m, 3.5 mm with 6.35 mm adapter',
+			'Weight'    => '230 g',
+		),
 	),
-	array( 'NV-AUD-004', 'Pulse True Wireless Earbuds', 'audio', '129', '109', true, 40, 210, 'pulse-earbuds.jpg',
+	array(
+		'NV-AUD-004',
+		'Pulse True Wireless Earbuds',
+		'audio',
+		'129',
+		'109',
+		true,
+		40,
+		210,
+		'pulse-earbuds.jpg',
 		array( 'Active noise cancelling in a 4.8 g bud', '8 h playback, 32 h with case', 'IPX5 sweat and splash resistant' ),
 		'Pulse packs proper ANC and a warm, detailed sound into a tiny, secure-fit earbud. The pocketable case charges wirelessly.',
-		array( 'Battery life' => '8 h (32 h with case)', 'Water resistance' => 'IPX5', 'Charging' => 'USB-C, Qi wireless' ),
+		array(
+			'Battery life'     => '8 h (32 h with case)',
+			'Water resistance' => 'IPX5',
+			'Charging'         => 'USB-C, Qi wireless',
+		),
 	),
-	array( 'NV-AUD-005', 'Heritage Leather Headphones', 'audio', '159', '', false, null, 60, 'retro-classic-headphones.jpg',
+	array(
+		'NV-AUD-005',
+		'Heritage Leather Headphones',
+		'audio',
+		'159',
+		'',
+		false,
+		null,
+		60,
+		'retro-classic-headphones.jpg',
 		array( 'Machined aluminium cups', 'Genuine leather headband and pads', 'Warm, vintage-inspired tuning' ),
 		'A modern take on classic hi-fi headphones. Heritage combines brushed aluminium with soft leather that ages beautifully.',
-		array( 'Materials' => 'Aluminium, leather', 'Connectivity' => '3.5 mm wired', 'Weight' => '310 g' ),
+		array(
+			'Materials'    => 'Aluminium, leather',
+			'Connectivity' => '3.5 mm wired',
+			'Weight'       => '310 g',
+		),
 	),
-	array( 'NV-AUD-006', 'Mono Bookshelf Speakers (Pair)', 'audio', '199', '', false, 8, 45, 'bookshelf-speakers.jpg',
+	array(
+		'NV-AUD-006',
+		'Mono Bookshelf Speakers (Pair)',
+		'audio',
+		'199',
+		'',
+		false,
+		8,
+		45,
+		'bookshelf-speakers.jpg',
 		array( 'Built-in 2 × 30 W amplifier', 'Bluetooth, optical and RCA inputs', 'Real wood veneer cabinets' ),
 		'Room-filling sound from a compact pair of powered speakers. Plug in your TV, turntable or computer, or stream from your phone.',
-		array( 'Power' => '2 × 30 W RMS', 'Inputs' => 'Bluetooth 5.0, optical, RCA', 'Finish' => 'Walnut veneer' ),
+		array(
+			'Power'  => '2 × 30 W RMS',
+			'Inputs' => 'Bluetooth 5.0, optical, RCA',
+			'Finish' => 'Walnut veneer',
+		),
 	),
-	array( 'NV-KEY-001', 'Tactile 75 Mechanical Keyboard', 'keyboards', '149', '', true, 30, 160, 'tactile-75-keyboard.jpg',
+	array(
+		'NV-KEY-001',
+		'Tactile 75 Mechanical Keyboard',
+		'keyboards',
+		'149',
+		'',
+		true,
+		30,
+		160,
+		'tactile-75-keyboard.jpg',
 		array( 'Compact 75% layout with function row', 'Hot-swappable tactile switches', 'Wireless (2.4 GHz + Bluetooth) or USB-C' ),
 		'Everything you need, nothing you do not. The Tactile 75 keeps the function row and arrows in a footprint that leaves room for your mouse.',
-		array( 'Layout' => '75%, ANSI', 'Switches' => 'Tactile, hot-swap', 'Battery' => '4000 mAh' ),
+		array(
+			'Layout'   => '75%, ANSI',
+			'Switches' => 'Tactile, hot-swap',
+			'Battery'  => '4000 mAh',
+		),
 	),
-	array( 'NV-KEY-002', 'Chroma 65 Hot-Swap Keyboard', 'keyboards', '169', '', false, 3, 120, 'chroma-mechanical-keyboard.jpg',
+	array(
+		'NV-KEY-002',
+		'Chroma 65 Hot-Swap Keyboard',
+		'keyboards',
+		'169',
+		'',
+		false,
+		3,
+		120,
+		'chroma-mechanical-keyboard.jpg',
 		array( 'Double-shot PBT keycaps in a colourway', 'Gasket-mounted for a soft, quiet feel', 'Linear switches, factory lubed' ),
 		'Chroma brings colour back to the desk with thick PBT keycaps and a gasket-mounted case that sounds as good as it feels.',
-		array( 'Layout' => '65%, ANSI', 'Switches' => 'Linear, hot-swap', 'Keycaps' => 'Double-shot PBT' ),
+		array(
+			'Layout'   => '65%, ANSI',
+			'Switches' => 'Linear, hot-swap',
+			'Keycaps'  => 'Double-shot PBT',
+		),
 	),
-	array( 'NV-KEY-003', 'Slim Wireless Keyboard', 'keyboards', '79', '69', false, 50, 90, 'slim-wireless-keyboard.jpg',
+	array(
+		'NV-KEY-003',
+		'Slim Wireless Keyboard',
+		'keyboards',
+		'79',
+		'69',
+		false,
+		50,
+		90,
+		'slim-wireless-keyboard.jpg',
 		array( 'Low-profile scissor switches', 'Pairs with up to 3 devices', 'Rechargeable, 3-month battery' ),
 		'A quiet, slim keyboard for laptops and tablets. Switch between three devices with a single key.',
-		array( 'Connectivity' => 'Bluetooth 5.1', 'Battery' => 'Up to 3 months', 'Weight' => '420 g' ),
+		array(
+			'Connectivity' => 'Bluetooth 5.1',
+			'Battery'      => 'Up to 3 months',
+			'Weight'       => '420 g',
+		),
 	),
-	array( 'NV-KEY-004', 'Essential Wired Keyboard', 'keyboards', '49', '', false, null, 70, 'minimal-wired-keyboard.jpg',
+	array(
+		'NV-KEY-004',
+		'Essential Wired Keyboard',
+		'keyboards',
+		'49',
+		'',
+		false,
+		null,
+		70,
+		'minimal-wired-keyboard.jpg',
 		array( 'Full-size layout with numpad', 'Whisper-quiet keys', 'Plug and play over USB-C' ),
 		'A clean, dependable full-size keyboard. No drivers, no batteries, no fuss.',
-		array( 'Layout' => 'Full-size, ANSI', 'Connectivity' => 'USB-C cable', 'Weight' => '560 g' ),
+		array(
+			'Layout'       => 'Full-size, ANSI',
+			'Connectivity' => 'USB-C cable',
+			'Weight'       => '560 g',
+		),
 	),
-	array( 'NV-MOU-001', 'Glide Wireless Mouse', 'mice', '59', '', false, 60, 150, 'glide-wireless-mouse.jpg',
+	array(
+		'NV-MOU-001',
+		'Glide Wireless Mouse',
+		'mice',
+		'59',
+		'',
+		false,
+		60,
+		150,
+		'glide-wireless-mouse.jpg',
 		array( 'Sculpted, right-handed shape', 'Silent clicks', '70-day battery, USB-C charging' ),
 		'Glide fits the hand naturally and moves silently, so you can work late without waking anyone.',
-		array( 'Sensor' => '4000 DPI optical', 'Connectivity' => 'Bluetooth, 2.4 GHz', 'Battery' => '70 days' ),
+		array(
+			'Sensor'       => '4000 DPI optical',
+			'Connectivity' => 'Bluetooth, 2.4 GHz',
+			'Battery'      => '70 days',
+		),
 	),
-	array( 'NV-MOU-002', 'Phantom Ultralight Mouse', 'mice', '89', '', true, 22, 130, 'phantom-gaming-mouse.jpg',
+	array(
+		'NV-MOU-002',
+		'Phantom Ultralight Mouse',
+		'mice',
+		'89',
+		'',
+		true,
+		22,
+		130,
+		'phantom-gaming-mouse.jpg',
 		array( '58 g ultralight shell', '26,000 DPI flagship sensor', 'Low-latency 2.4 GHz wireless' ),
 		'Built for speed and accuracy, Phantom is light enough to flick and precise enough to trust.',
-		array( 'Weight' => '58 g', 'Sensor' => '26,000 DPI', 'Polling rate' => '1000 Hz' ),
+		array(
+			'Weight'       => '58 g',
+			'Sensor'       => '26,000 DPI',
+			'Polling rate' => '1000 Hz',
+		),
 	),
-	array( 'NV-MOU-003', 'Vector RGB Gaming Mouse', 'mice', '69', '55', false, 4, 85, 'rgb-gaming-mouse.jpg',
+	array(
+		'NV-MOU-003',
+		'Vector RGB Gaming Mouse',
+		'mice',
+		'69',
+		'55',
+		false,
+		4,
+		85,
+		'rgb-gaming-mouse.jpg',
 		array( 'Customisable RGB lighting', '8 programmable buttons', 'Braided, flexible cable' ),
 		'Vector gives you buttons where you need them and lighting that matches your setup.',
-		array( 'Buttons' => '8 programmable', 'Sensor' => '16,000 DPI', 'Connectivity' => 'USB-A wired' ),
+		array(
+			'Buttons'      => '8 programmable',
+			'Sensor'       => '16,000 DPI',
+			'Connectivity' => 'USB-A wired',
+		),
 	),
-	array( 'NV-WRK-001', 'Aluminium Laptop Stand', 'workspace', '69', '', true, 35, 175, 'aluminium-laptop-stand.jpg',
+	array(
+		'NV-WRK-001',
+		'Aluminium Laptop Stand',
+		'workspace',
+		'69',
+		'',
+		true,
+		35,
+		175,
+		'aluminium-laptop-stand.jpg',
 		array( 'Raises your screen to eye level', 'Six height positions', 'Folds flat for travel' ),
 		'Bring your laptop up to eye level and your shoulders down. The stand is machined from a single sheet of aluminium for a solid, wobble-free base.',
-		array( 'Material' => 'Anodised aluminium', 'Fits' => '10–17 inch laptops', 'Weight' => '760 g' ),
+		array(
+			'Material' => 'Anodised aluminium',
+			'Fits'     => '10–17 inch laptops',
+			'Weight'   => '760 g',
+		),
 	),
-	array( 'NV-WRK-002', 'Arc LED Desk Lamp', 'workspace', '89', '', false, 12, 50, 'arc-desk-lamp.jpg',
+	array(
+		'NV-WRK-002',
+		'Arc LED Desk Lamp',
+		'workspace',
+		'89',
+		'',
+		false,
+		12,
+		50,
+		'arc-desk-lamp.jpg',
 		array( 'Flicker-free, high-CRI LED', 'Adjustable colour temperature', 'Weighted steel base' ),
 		'Even, glare-free light for late sessions. Dial in warm or cool white to suit the time of day.',
-		array( 'Brightness' => '800 lm', 'Colour temperature' => '2700–6500 K', 'Material' => 'Powder-coated steel' ),
+		array(
+			'Brightness'         => '800 lm',
+			'Colour temperature' => '2700–6500 K',
+			'Material'           => 'Powder-coated steel',
+		),
 	),
-	array( 'NV-WRK-003', 'Oak Monitor Riser', 'workspace', '119', '', false, 6, 40, 'monitor-riser.jpg',
+	array(
+		'NV-WRK-003',
+		'Oak Monitor Riser',
+		'workspace',
+		'119',
+		'',
+		false,
+		6,
+		40,
+		'monitor-riser.jpg',
 		array( 'Solid oak with steel legs', 'Space underneath for a keyboard', 'Supports up to 30 kg' ),
 		'Lift your monitor and clear your desk in one move. Slide your keyboard underneath when you are done for the day.',
-		array( 'Material' => 'Solid oak, steel', 'Dimensions' => '90 × 25 × 12 cm', 'Max load' => '30 kg' ),
+		array(
+			'Material'   => 'Solid oak, steel',
+			'Dimensions' => '90 × 25 × 12 cm',
+			'Max load'   => '30 kg',
+		),
 	),
-	array( 'NV-CHG-001', 'Dock Pro USB-C Docking Station', 'charging-hubs', '129', '', true, 2, 190, 'usb-c-dock.jpg',
+	array(
+		'NV-CHG-001',
+		'Dock Pro USB-C Docking Station',
+		'charging-hubs',
+		'129',
+		'',
+		true,
+		2,
+		190,
+		'usb-c-dock.jpg',
 		array( 'Dual 4K display output over one cable', '8 ports: HDMI, DisplayPort, USB-A, USB-C, SD, Ethernet', '100 W pass-through laptop charging' ),
 		'Plug in one USB-C cable and your laptop becomes a full desktop: two displays, wired network, drives and charging. Aluminium housing stays cool and silent.',
-		array( 'Ports' => 'HDMI 4K60, 2 × USB-A, USB-C, SD, microSD, Ethernet, PD', 'Pass-through' => '100 W', 'Cable' => '15 cm' ),
+		array(
+			'Ports'        => 'HDMI 4K60, 2 × USB-A, USB-C, SD, microSD, Ethernet, PD',
+			'Pass-through' => '100 W',
+			'Cable'        => '15 cm',
+		),
 	),
-	array( 'NV-CHG-002', '65W GaN USB-C Charger', 'charging-hubs', '49', '', false, 80, 220, 'gan-charger.jpg',
+	array(
+		'NV-CHG-002',
+		'65W GaN USB-C Charger',
+		'charging-hubs',
+		'49',
+		'',
+		false,
+		80,
+		220,
+		'gan-charger.jpg',
 		array( 'Charges a laptop, phone and earbuds at once', 'Gallium nitride: half the size of standard chargers', 'Foldable plug' ),
 		'A single compact charger for everything in your bag. Smart power sharing gives each device what it needs.',
-		array( 'Output' => '65 W total', 'Ports' => '2 × USB-C, 1 × USB-A', 'Size' => '45 × 45 × 30 mm' ),
+		array(
+			'Output' => '65 W total',
+			'Ports'  => '2 × USB-C, 1 × USB-A',
+			'Size'   => '45 × 45 × 30 mm',
+		),
 	),
-	array( 'NV-CHG-003', 'MagDock Wireless Charger', 'charging-hubs', '39', '29', false, 45, 100, 'wireless-charging-pad.jpg',
+	array(
+		'NV-CHG-003',
+		'MagDock Wireless Charger',
+		'charging-hubs',
+		'39',
+		'29',
+		false,
+		45,
+		100,
+		'wireless-charging-pad.jpg',
 		array( 'Magnetic alignment, 15 W fast charging', 'Works through most cases', 'Includes USB-C cable' ),
 		'Snap your phone on and forget about cables. MagDock aligns perfectly every time.',
-		array( 'Output' => '15 W', 'Compatibility' => 'Qi / Qi2 phones', 'Cable' => '1 m USB-C' ),
+		array(
+			'Output'        => '15 W',
+			'Compatibility' => 'Qi / Qi2 phones',
+			'Cable'         => '1 m USB-C',
+		),
 	),
 );
 
-$nova_menu_order = 0;
-foreach ( $nova_products as $nova_p ) {
-	list( $sku, $name, $cat, $regular, $sale, $featured, $qty, $sales, $img, $bullets, $desc, $attrs ) = $nova_p;
+/**
+ * Create or update one product (matched by SKU).
+ *
+ * @param array $data       Row from $nova_products.
+ * @param int   $menu_order Sort position.
+ * @param array $term_ids   Category slug => term ID.
+ */
+function nova_seed_product( $data, $menu_order, $term_ids ) {
+	list( $sku, $name, $cat, $regular, $sale, $featured, $qty, $sales, $img, $bullets, $desc, $attrs ) = $data;
 
 	$product_id = wc_get_product_id_by_sku( $sku );
 	$product    = $product_id ? wc_get_product( $product_id ) : new WC_Product_Simple();
@@ -393,8 +663,8 @@ foreach ( $nova_products as $nova_p ) {
 	$product->set_regular_price( $regular );
 	$product->set_sale_price( $sale );
 	$product->set_featured( $featured );
-	$product->set_menu_order( $nova_menu_order++ );
-	$product->set_category_ids( array( $nova_term_ids[ $cat ] ) );
+	$product->set_menu_order( $menu_order );
+	$product->set_category_ids( array( $term_ids[ $cat ] ) );
 	$product->set_short_description( '<ul><li>' . implode( '</li><li>', array_map( 'esc_html', $bullets ) ) . '</li></ul>' );
 	$product->set_description( '<p>' . esc_html( $desc ) . '</p>' );
 	$product->set_total_sales( $sales );
@@ -429,6 +699,10 @@ foreach ( $nova_products as $nova_p ) {
 	WP_CLI::log( sprintf( '  %s %s (#%d)', $product_id ? 'updated' : 'created', $name, $product->get_id() ) );
 }
 
+foreach ( $nova_products as $nova_index => $nova_p ) {
+	nova_seed_product( $nova_p, $nova_index, $nova_term_ids );
+}
+
 // Category tiles use images already imported for products.
 foreach ( $nova_categories as $nova_slug => list( , , $nova_img ) ) {
 	$nova_thumb = nova_seed_image( $nova_img, $nova_categories[ $nova_slug ][0] );
@@ -440,9 +714,9 @@ foreach ( $nova_categories as $nova_slug => list( , , $nova_img ) ) {
 // Keep "Uncategorized" out of navigation by leaving it empty.
 WP_CLI::log( 'Products ready: ' . count( $nova_products ) . '.' );
 
-/* -------------------------------------------------------------------------
- * 8. Menus (editable in Appearance → Menus)
- * ---------------------------------------------------------------------- */
+// ----------------------------------------------------------------------
+// 8. Menus (editable in Appearance → Menus)
+// ----------------------------------------------------------------------
 
 /**
  * Create a menu if missing, replace its items, and assign it to a location.

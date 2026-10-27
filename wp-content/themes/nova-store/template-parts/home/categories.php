@@ -26,7 +26,17 @@ if ( ! $nova_terms ) {
 				<li class="category-card">
 					<a href="<?php echo esc_url( get_term_link( $nova_term ) ); ?>">
 						<?php if ( $nova_thumb ) : ?>
-							<?php echo wp_get_attachment_image( $nova_thumb, 'woocommerce_thumbnail', false, array( 'alt' => '', 'loading' => 'lazy' ) ); ?>
+							<?php
+							echo wp_get_attachment_image(
+								$nova_thumb,
+								'woocommerce_thumbnail',
+								false,
+								array(
+									'alt'     => '',
+									'loading' => 'lazy',
+								)
+							);
+							?>
 						<?php endif; ?>
 						<span class="category-card__label">
 							<span class="category-card__name"><?php echo esc_html( $nova_term->name ); ?></span>

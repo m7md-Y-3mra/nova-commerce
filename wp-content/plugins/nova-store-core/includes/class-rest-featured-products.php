@@ -75,11 +75,11 @@ class REST_Featured_Products {
 	public function get_collection_params(): array {
 		return array(
 			'per_page' => array(
-				'description'       => __( 'Maximum number of products to return.', 'nova-store-core' ),
-				'type'              => 'integer',
-				'default'           => 4,
-				'minimum'           => 1,
-				'maximum'           => self::MAX_PER_PAGE,
+				'description' => __( 'Maximum number of products to return.', 'nova-store-core' ),
+				'type'        => 'integer',
+				'default'     => 4,
+				'minimum'     => 1,
+				'maximum'     => self::MAX_PER_PAGE,
 				// No custom callbacks: core's rest_parse_request_arg() validates the
 				// schema above (rejects "abc", -5, 999) and then casts to int.
 			),

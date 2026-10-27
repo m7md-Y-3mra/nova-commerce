@@ -158,15 +158,15 @@ class Product_Hooks {
 	/**
 	 * Filter: add a `low-stock` CSS class alongside WooCommerce's `in-stock`.
 	 *
-	 * @param string      $class   Default class ("in-stock", "out-of-stock", ...).
+	 * @param string      $css_class Default class ("in-stock", "out-of-stock", ...).
 	 * @param \WC_Product $product Product being displayed.
 	 * @return string
 	 */
-	public function filter_availability_class( $class, $product ) {
+	public function filter_availability_class( $css_class, $product ) {
 		if ( $product instanceof \WC_Product && self::is_low_stock( $product ) ) {
-			$class .= ' low-stock';
+			$css_class .= ' low-stock';
 		}
-		return $class;
+		return $css_class;
 	}
 
 	/**

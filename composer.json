@@ -1,0 +1,19 @@
+{
+    "name": "nova-store/woocommerce-demo",
+    "description": "NOVA Store WooCommerce demo: dev tooling for the custom theme and plugin.",
+    "type": "project",
+    "license": "GPL-2.0-or-later",
+    "require-dev": {
+        "wp-coding-standards/wpcs": "^3.1",
+        "phpcompatibility/phpcompatibility-wp": "^2.1"
+    },
+    "scripts": {
+        "lint": "find wp-content/themes/nova-store wp-content/plugins/nova-store-core seed -name '*.php' -print0 | xargs -0 -n1 php -l",
+        "phpcs": "phpcs"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

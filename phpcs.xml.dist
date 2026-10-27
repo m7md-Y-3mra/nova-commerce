@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<ruleset name="NOVA Store">
+	<description>WordPress Coding Standards for the custom theme and plugin.</description>
+
+	<file>wp-content/themes/nova-store</file>
+	<file>wp-content/plugins/nova-store-core</file>
+	<file>seed</file>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+
+	<config name="testVersion" value="8.1-"/>
+	<config name="minimum_wp_version" value="6.5"/>
+
+	<rule ref="WordPress">
+		<!-- PSR-4-ish class file names inside includes/ are fine for this small plugin. -->
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+	</rule>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="nova-store"/>
+				<element value="nova-store-core"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="nova_store"/>
+				<element value="NovaStoreCore"/>
+				<element value="NOVA_STORE"/>
+				<element value="nova"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>
