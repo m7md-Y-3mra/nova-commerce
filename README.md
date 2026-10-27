@@ -4,6 +4,10 @@ A premium tech-accessories store built the WordPress way: a **custom classic the
 
 The storefront is **bilingual: English and Arabic (العربية)**, with a full right-to-left layout. Visitors switch language from the header; the admin stays in English.
 
+**Live demo:** <https://techscope.alwaysdata.net/nova/> (English) · <https://techscope.alwaysdata.net/nova/?lang=ar> (Arabic). Hosted on the alwaysdata free plan; see [Deploying to alwaysdata](#deploying-to-alwaysdata).
+
+Local URLs after `./bin/setup.sh`:
+
 - Storefront: <http://localhost:8090> (English) · <http://localhost:8090/?lang=ar> (Arabic)
 - Admin: <http://localhost:8090/wp-admin>. The user is `admin`, and the password is the one you set in `.env`.
 - Public API: <http://localhost:8090/wp-json/nova-store/v1/featured-products>
