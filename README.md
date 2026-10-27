@@ -481,7 +481,8 @@ The live site is a **fresh install plus the seeder**. The local database is not 
 1. *Databases → MySQL*: create a database named `<account>_nova`, and give the `<account>` user all rights on it.
 2. *Web → Sites*:
    - **Empty account:** the default site at `https://<account>.alwaysdata.net`, with root `www/` and PHP 8.4, is fine.
-   - **Account that already hosts a site in `www/`:** add a new site with its own address, root directory `nova/` and PHP 8.4, then deploy with `DOCROOT=nova SITE_URL=https://<that address>`. The site must be at the root of its address (not `/nova` under another site's address), because the permalinks assume `/`.
+   - **Account that already hosts a site in `www/` (free plan):** the free plan allows one account per person and only the `<account>.alwaysdata.net` address, so a second account or a `nova.<account>.alwaysdata.net` address is not an option. Do not add a new site. Install into a sub-folder of the existing site instead: `DOCROOT=www/nova SITE_URL=https://<account>.alwaysdata.net/nova`. The installer writes `www/nova/.htaccess` with `RewriteBase /nova/`; Apache does not inherit the parent site's rewrite rules, so `/nova/...` goes to NOVA and every other URL still goes to the parent site.
+   - **Paid plan:** a separate site with its own domain and root directory `nova/` also works (`DOCROOT=nova SITE_URL=https://shop.example.com`).
 3. *Remote access → SSH*: enable password login, or add your SSH key.
 
 The installer refuses to run if its root directory already holds another theme, or a `wp-config.php` for a different database, so it cannot overwrite an existing site.
@@ -504,7 +505,7 @@ Start these lines with a space so most shells keep them out of history. `~/.admi
 ALWAYSDATA_ACCOUNT=ACCOUNT ADMIN_EMAIL=you@example.com ./deploy/alwaysdata-push.sh
 ```
 
-Optional variables: `SITE_URL` (the site's address), `DOCROOT` (root directory under your home, default `www`), `DB_NAME` (if not `<account>_nova`), `ADMIN_USER` (default `admin`). Later pushes only replace the theme and plugin code. The catalog is seeded on the first run only; add `RESEED=1` to reset products, prices and stock to the demo values.
+Optional variables: `SITE_URL` (the site's address), `DOCROOT` (root directory under your home, default `www`; `www/nova` for a sub-folder), `DB_NAME` (if not `<account>_nova`), `ADMIN_USER` (default `admin`). Later pushes only replace the theme and plugin code. The catalog is seeded on the first run only; add `RESEED=1` to reset products, prices and stock to the demo values.
 
 **What the installer sets up for alwaysdata**
 
