@@ -26,10 +26,11 @@ The storefront is **bilingual: English and Arabic (العربية)**, with a ful
 10. [Sample data](#sample-data)
 11. [Testing checklist](#testing-checklist)
 12. [Code quality](#code-quality)
-13. [Troubleshooting](#troubleshooting)
-14. [Interview walkthrough](#interview-walkthrough)
-15. [Known limitations](#known-limitations)
-16. [Image credits](#image-credits)
+13. [Deploying to alwaysdata](#deploying-to-alwaysdata)
+14. [Troubleshooting](#troubleshooting)
+15. [Interview walkthrough](#interview-walkthrough)
+16. [Known limitations](#known-limitations)
+17. [Image credits](#image-credits)
 
 ---
 
@@ -108,6 +109,9 @@ To reset everything, run `docker compose down -v` and then `./bin/setup.sh`. **`
 │   ├── setup.sh                # idempotent bootstrap (WP-CLI)
 │   ├── i18n.sh                 # rebuild .pot → Arabic .po → .mo for theme + plugin
 │   └── po-fill.py              # merges Arabic strings into a .po (used by i18n.sh)
+├── deploy/
+│   ├── alwaysdata-push.sh      # local: upload code over SSH, run the installer
+│   └── alwaysdata-install.sh   # server: WordPress + WooCommerce + theme/plugin + seed (re-runnable)
 ├── seed/
 │   ├── seed.php                # store config + catalog, matched by SKU (re-runnable)
 │   ├── translations-ar.php     # Arabic catalog content: products, categories, pages
@@ -460,6 +464,55 @@ vendor/bin/phpcs
 `composer lint` runs `php -l` on every custom PHP file. PHPCS checks against the WordPress Coding Standards 3 and PHPCompatibilityWP (PHP 8.1+). Both currently pass with **0 errors and 0 warnings**.
 
 There are no automated PHPUnit or E2E tests. Verification was done manually with the checklist above, in a browser and with `curl`/WP-CLI.
+
+## Deploying to alwaysdata
+
+The store runs on the alwaysdata free plan (1 GB disk, PHP 8.4, SSH). alwaysdata has no Docker, so two scripts replace `setup.sh` there:
+
+| Script | Runs on | What it does |
+|---|---|---|
+| `deploy/alwaysdata-push.sh` | your machine | Uploads the theme, plugin and `seed/` to `~/nova-src` over SSH, then runs the installer. |
+| `deploy/alwaysdata-install.sh` | the server | Installs WordPress 7.1.3, WooCommerce 11.2.1 and the Arabic language packs into `~/www`, copies the theme and plugin, activates them and seeds the catalog. Safe to run again. |
+
+The live site is a **fresh install plus the seeder**. The local database is not copied, so local test orders and customer data stay on your machine.
+
+**One-time setup in the alwaysdata admin panel**
+
+1. Use a separate account (or a separate site and docroot) from any other WordPress site. The installer refuses to run if `~/www` already holds another theme or a `wp-config.php` for a different database.
+2. *Databases → MySQL*: create a database named `<account>_nova`.
+3. *Web → Sites*: the default site at `https://<account>.alwaysdata.net` with root `www/` and PHP 8.4 is fine.
+4. *Remote access → SSH*: enable password login, or add your SSH key.
+
+**One-time password files on the server** (mode 600, never in the repo or on a command line):
+
+```bash
+printf '%s' 'YOUR_DB_PASSWORD' | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 077; cat > ~/.dbpass'
+```
+
+```bash
+printf '%s' 'YOUR_ADMIN_PASSWORD' | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 077; cat > ~/.adminpass'
+```
+
+Start these lines with a space so most shells keep them out of history. `~/.adminpass` is only read on the first install and can be deleted afterwards.
+
+**Deploy (first time and every update):**
+
+```bash
+ALWAYSDATA_ACCOUNT=ACCOUNT ADMIN_EMAIL=you@example.com ./deploy/alwaysdata-push.sh
+```
+
+Optional variables: `SITE_URL` (a custom domain), `DB_NAME` (if not `<account>_nova`), `ADMIN_USER` (default `admin`). Later pushes only replace the theme and plugin code. The catalog is seeded on the first run only; add `RESEED=1` to reset products, prices and stock to the demo values.
+
+**What the installer sets up for alwaysdata**
+
+- **HTTPS behind the proxy.** TLS ends at alwaysdata's proxy, so `wp-config.php` sets `$_SERVER['HTTPS']` when `X-Forwarded-Proto` is `https`. Without this, secure cookies and `https` URLs break. `.htaccess` redirects HTTP to HTTPS using the same header.
+- **`.htaccess` is written by the script.** `wp rewrite flush --hard` cannot write it there, and without it every product URL returns 404.
+- **No customer e-mails.** alwaysdata really sends mail, and shoppers on a public demo can type someone else's address. The installer turns off the customer order and account e-mails; the admin "new order" e-mail and password resets stay on.
+- **Memory.** WP-CLI runs with `memory_limit=512M` because the seeder generates thumbnails for 19 images.
+- **Hardening.** `WP_DEBUG` off, `DISALLOW_FILE_EDIT` on, `wp-config.php` mode 600. The inactive `twentytwentyfive` theme stays installed so wp-admin still works if the custom theme ever fatals.
+- **Disk.** The install uses about 200 MB of the 1 GB.
+
+This is a demo deployment, not a security-reviewed production setup.
 
 ## Troubleshooting
 
