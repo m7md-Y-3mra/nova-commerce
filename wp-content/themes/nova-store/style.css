@@ -1,0 +1,16 @@
+/*
+Theme Name:        NOVA Store
+Theme URI:         http://localhost:8090
+Description:       Minimal, premium classic theme for the NOVA Store WooCommerce demo. Presentation only; business logic lives in the nova-store-core plugin.
+Version:           1.0.0
+Requires at least: 6.5
+Tested up to:      7.1
+Requires PHP:      8.1
+Author:            NOVA Store
+License:           GPL-2.0-or-later
+Text Domain:       nova-store
+WC requires at least: 9.0
+WC tested up to:   11.2
+*/
+
+/* Styles live in assets/css/main.css and are enqueued from functions.php. */
