@@ -21,7 +21,7 @@ require_once ABSPATH . 'wp-admin/includes/image.php';
 require_once ABSPATH . 'wp-admin/includes/file.php';
 require_once ABSPATH . 'wp-admin/includes/media.php';
 
-const NOVA_SEED_IMAGES = '/seed/images/';
+const NOVA_SEED_IMAGES = __DIR__ . '/images/';
 
 $nova_ar = require __DIR__ . '/translations-ar.php';
 
@@ -198,7 +198,7 @@ WP_CLI::log( 'Pages ready (home, shop, cart, checkout, my account, shipping & re
 /**
  * Import a bundled image once and return its attachment ID.
  *
- * @param string $file Image file name in /seed/images.
+ * @param string $file Image file name in seed/images.
  * @param string $alt  Alt text.
  * @return int Attachment ID or 0.
  */
