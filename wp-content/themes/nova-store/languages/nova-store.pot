@@ -1,0 +1,269 @@
+# Copyright (C) 2026 NOVA Store
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: NOVA Store 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/theme/nova-store\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-27T13:27:08+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: nova-store\n"
+
+#. Theme Name of the theme
+#. Author of the theme
+#: style.css
+msgid "NOVA Store"
+msgstr ""
+
+#. Theme URI of the theme
+#: style.css
+msgid "http://localhost:8090"
+msgstr ""
+
+#. Description of the theme
+#: style.css
+msgid "Minimal, premium classic theme for the NOVA Store WooCommerce demo. Presentation only; business logic lives in the nova-store-core plugin."
+msgstr ""
+
+#: 404.php:15
+msgid "This page took a day off."
+msgstr ""
+
+#: 404.php:16
+msgid "The link may be broken or the product may have moved. Try a search instead."
+msgstr ""
+
+#: 404.php:23
+msgid "Browse the shop"
+msgstr ""
+
+#: footer.php:14
+msgid "Considered tech accessories for people who do their best work at a desk. Designed to last, priced fairly, backed by real humans."
+msgstr ""
+
+#: footer.php:18
+msgid "Shop"
+msgstr ""
+
+#: footer.php:21
+msgid "All products"
+msgstr ""
+
+#: footer.php:30
+msgid "Help"
+msgstr ""
+
+#: footer.php:44
+msgid "Contact"
+msgstr ""
+
+#: footer.php:46
+msgid "NOVA Store (demo)"
+msgstr ""
+
+#: footer.php:47
+msgid "Mon–Fri, 9:00–17:00 UTC"
+msgstr ""
+
+#: footer.php:54
+msgid "Demo store — no real payments are processed."
+msgstr ""
+
+#: footer.php:55
+msgid "Secure checkout · Cash on delivery"
+msgstr ""
+
+#: front-page.php:27
+msgid "Editor’s picks"
+msgstr ""
+
+#: front-page.php:28
+msgid "Featured gear"
+msgstr ""
+
+#: front-page.php:38
+msgid "Limited time"
+msgstr ""
+
+#: front-page.php:39
+msgid "On sale now"
+msgstr ""
+
+#: functions.php:59
+msgid "Primary navigation"
+msgstr ""
+
+#: functions.php:60
+msgid "Footer help links"
+msgstr ""
+
+#: header.php:21
+msgid "Skip to content"
+msgstr ""
+
+#. translators: %s: price threshold.
+#: header.php:29
+#, php-format
+msgid "Free shipping on orders over %s · 30-day free returns"
+msgstr ""
+
+#: header.php:42
+msgid "Menu"
+msgstr ""
+
+#: header.php:56
+msgid "Primary"
+msgstr ""
+
+#: header.php:88
+msgid "My account"
+msgstr ""
+
+#. translators: %d: number of items in cart.
+#: inc/template-tags.php:70
+#, php-format
+msgid "Cart, %d item"
+msgid_plural "Cart, %d items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/template-tags.php:90
+msgid "Shop all"
+msgstr ""
+
+#: inc/template-tags.php:141
+msgid "Language"
+msgstr ""
+
+#: inc/woocommerce.php:45
+msgid "Breadcrumb"
+msgstr ""
+
+#: inc/woocommerce.php:77
+msgid "Product categories"
+msgstr ""
+
+#: inc/woocommerce.php:78
+msgid "All"
+msgstr ""
+
+#: inc/woocommerce.php:146
+msgid "Popular right now"
+msgstr ""
+
+#. translators: %s: search query.
+#: index.php:19
+#, php-format
+msgid "Results for “%s”"
+msgstr ""
+
+#: index.php:44
+msgid "Nothing found here yet."
+msgstr ""
+
+#: template-parts/home/categories.php:19
+msgid "Browse"
+msgstr ""
+
+#: template-parts/home/categories.php:20
+msgid "Shop by category"
+msgstr ""
+
+#. translators: %d: product count.
+#: template-parts/home/categories.php:46
+#, php-format
+msgid "%d product"
+msgid_plural "%d products"
+msgstr[0] ""
+msgstr[1] ""
+
+#: template-parts/home/hero.php:16
+msgid "New season · Workspace collection"
+msgstr ""
+
+#: template-parts/home/hero.php:17
+msgid "Quiet tools for focused work."
+msgstr ""
+
+#: template-parts/home/hero.php:18
+msgid "Audio, keyboards and desk essentials chosen for how they feel after eight hours — not how they look on a spec sheet."
+msgstr ""
+
+#: template-parts/home/hero.php:21
+msgid "Shop the collection"
+msgstr ""
+
+#: template-parts/home/hero.php:25
+msgid "Explore audio"
+msgstr ""
+
+#: template-parts/home/hero.php:31
+msgid "A minimal wooden desk with a laptop on a stand, lit by a warm lamp"
+msgstr ""
+
+#: template-parts/home/products.php:27
+msgid "View all"
+msgstr ""
+
+#: template-parts/home/promo.php:18
+msgid "The desk edit"
+msgstr ""
+
+#: template-parts/home/promo.php:19
+msgid "Build a setup you actually want to sit at."
+msgstr ""
+
+#: template-parts/home/promo.php:20
+msgid "Stands, risers and lighting that raise your screen, clear your desk and save your neck."
+msgstr ""
+
+#: template-parts/home/promo.php:21
+msgid "Shop workspace"
+msgstr ""
+
+#. translators: %s: price threshold.
+#: template-parts/home/values.php:16
+#, php-format
+msgid "Free shipping over %s"
+msgstr ""
+
+#: template-parts/home/values.php:17
+msgid "Tracked shipping"
+msgstr ""
+
+#: template-parts/home/values.php:18
+msgid "Dispatched within one business day"
+msgstr ""
+
+#: template-parts/home/values.php:22
+msgid "30-day free returns"
+msgstr ""
+
+#: template-parts/home/values.php:23
+msgid "Prepaid label, no questions asked"
+msgstr ""
+
+#: template-parts/home/values.php:27
+msgid "2-year warranty"
+msgstr ""
+
+#: template-parts/home/values.php:28
+msgid "On every product we sell"
+msgstr ""
+
+#: template-parts/home/values.php:32
+msgid "Secure checkout"
+msgstr ""
+
+#: template-parts/home/values.php:33
+msgid "Pay on delivery in this demo"
+msgstr ""
+
+#: template-parts/home/values.php:37
+msgid "Why shop with NOVA"
+msgstr ""
