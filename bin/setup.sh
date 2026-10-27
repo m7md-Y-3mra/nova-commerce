@@ -14,14 +14,26 @@ cd "$(dirname "$0")/.."
 
 WOOCOMMERCE_VERSION="11.2.1"
 
-if [[ ! -f .env ]]; then
-	echo "Missing .env - copy .env.example to .env and set real values first." >&2
+# ENV_FILE lets you run a second, throwaway stack, e.g.
+#   ENV_FILE=.env.fresh COMPOSE_PROJECT_NAME=nova-fresh bin/setup.sh
+ENV_FILE="${ENV_FILE:-.env}"
+if [[ ! -f "$ENV_FILE" ]]; then
+	echo "Missing $ENV_FILE - copy .env.example to .env and set real values first." >&2
 	exit 1
 fi
 set -a
-# shellcheck disable=SC1091
-source .env
+# shellcheck disable=SC1090
+source "$ENV_FILE"
 set +a
+
+docker() {
+	if [[ "$1" == "compose" ]]; then
+		shift
+		command docker compose --env-file "$ENV_FILE" "$@"
+	else
+		command docker "$@"
+	fi
+}
 
 wp() {
 	docker compose run --rm -T wpcli "$@"
