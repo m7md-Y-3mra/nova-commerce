@@ -29,6 +29,7 @@ require_once NOVA_STORE_CORE_DIR . 'includes/class-settings.php';
 require_once NOVA_STORE_CORE_DIR . 'includes/class-delivery.php';
 require_once NOVA_STORE_CORE_DIR . 'includes/class-product-hooks.php';
 require_once NOVA_STORE_CORE_DIR . 'includes/class-checkout-hooks.php';
+require_once NOVA_STORE_CORE_DIR . 'includes/class-account-hooks.php';
 require_once NOVA_STORE_CORE_DIR . 'includes/class-rest-featured-products.php';
 require_once NOVA_STORE_CORE_DIR . 'includes/class-content-translation.php';
 require_once NOVA_STORE_CORE_DIR . 'includes/class-translation-admin.php';
@@ -81,6 +82,7 @@ add_action(
 		( new \NovaStoreCore\Settings() )->register();
 		( new \NovaStoreCore\Product_Hooks() )->register();
 		( new \NovaStoreCore\Checkout_Hooks() )->register();
+		( new \NovaStoreCore\Account_Hooks() )->register();
 		( new \NovaStoreCore\REST_Featured_Products() )->register();
 	}
 );
