@@ -144,9 +144,10 @@ To reset everything, run `docker compose down -v` and then `./bin/setup.sh`. **`
         │   ├── class-product-hooks.php     # product page / label hooks
         │   ├── class-checkout-hooks.php    # checkout validation + order meta
         │   ├── class-account-hooks.php     # register form: first/last name
+        │   ├── class-account-pages.php     # /login/ and /register/ pages + redirects
         │   └── class-rest-featured-products.php
         ├── languages/                  # nova-store-core.pot, nova-store-core-ar.po/.mo
-        ├── templates/trust-block.php
+        ├── templates/                  # trust-block.php, login-form.php, register-form.php
         └── assets/css/nova-store-core.css
 ```
 
@@ -202,6 +203,10 @@ All of these are in `wp-content/plugins/nova-store-core/includes/`. Every hook w
 | 13 | `woocommerce_register_form_start` | action | My Account → Register, above the e-mail field | Adds required **First name** / **Last name** fields, refilled after a failed submit. |
 | 14 | `woocommerce_register_post` | action, `($username, $email, $errors)` | Server side, before the customer is created | Requires both names (max 60 characters). Checkout's "Create an account?" fires the same hook, so it only acts on the My Account form (checkout has billing names). |
 | 15 | `woocommerce_created_customer` | action | Right after the customer is inserted | Saves the names on the user and as the default billing name through `WC_Customer`, so the dashboard says "Hello Sara Ali". |
+| 16 | `[nova_login_form]`, `[nova_register_form]` | shortcodes | The *Log in* (`/login/`) and *Create account* (`/register/`) pages | Render WooCommerce's own login/register forms (same field names, nonces and hooks), notices first. Created by `seed/account-pages.php`, which the installer re-runs on every deploy. |
+| 17 | `template_redirect` | action | Every page view (GET only) | Logged out: My Account → `/login/` (lost password excluded). Logged in: `/login/`, `/register/` → My Account. |
+| 18 | `woocommerce_is_account_page` | filter | `/login/`, `/register/` | Treats them as account pages: password-strength script, no-cache headers, no hreflang. |
+| 19 | `nova_store_account_url` | custom filter | Theme header account icon | `/login/` for visitors, My Account once logged in. |
 
 The content filters used for Arabic (`the_title`, `the_content`, `woocommerce_product_get_name`, `get_product_cat`, …) are listed under [Languages](#languages-english--العربية).
 
@@ -428,8 +433,10 @@ These are the checks run for this build. Re-run them after any change.
 - [ ] In the admin, **WooCommerce → Orders** shows the order as *Processing*, with "Estimated dispatch (NOVA)" and "Channel: web-storefront" under the shipping address. The product's stock went down.
 
 **Accounts**
-- [ ] *My account* shows Login and Register side by side (stacked on mobile).
-- [ ] Registering without a first name shows "First name is required."; a used e-mail shows "An account is already registered…".
+- [ ] Logged out, the header account icon and `/my-account/` both lead to `/login/`. *Lost your password?* still opens My Account → Lost password.
+- [ ] `/login/` and `/register/` each show one form and link to each other.
+- [ ] A wrong password on `/login/` shows the error on `/login/`; a right one opens the dashboard. Logged in, `/login/` and `/register/` redirect to My Account.
+- [ ] On `/register/`, registering without a first name shows "First name is required."; a used e-mail shows "An account is already registered…".
 - [ ] A valid sign-up logs you in and the dashboard says "Hello *First Last*". Log out and log back in with the same e-mail and password.
 - [ ] Ticking *Create an account?* at checkout asks for a password and creates the customer with the order.
 - [ ] In Arabic, the name labels, errors and privacy note are Arabic.
