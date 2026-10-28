@@ -35,6 +35,26 @@ function nova_store_wc_wrapper_end() {
 add_action( 'woocommerce_after_main_content', 'nova_store_wc_wrapper_end', 10 );
 
 /**
+ * Open the single-product top area (gallery + summary).
+ *
+ * The sticky summary is bounded by its parent. Without this wrapper the parent
+ * is the whole product, so a tall summary slid down over the tabs and related
+ * products while scrolling.
+ */
+function nova_store_product_top_start() {
+	echo '<div class="product-top">';
+}
+add_action( 'woocommerce_before_single_product_summary', 'nova_store_product_top_start', 1 );
+
+/**
+ * Close the single-product top area, before the tabs.
+ */
+function nova_store_product_top_end() {
+	echo '</div>';
+}
+add_action( 'woocommerce_after_single_product_summary', 'nova_store_product_top_end', 1 );
+
+/**
  * Breadcrumb markup.
  *
  * @param array $args Breadcrumb defaults.
