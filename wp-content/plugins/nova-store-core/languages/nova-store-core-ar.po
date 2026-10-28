@@ -27,6 +27,32 @@ msgstr ""
 msgid "NOVA Store"
 msgstr ""
 
+#: includes/class-account-hooks.php:47
+#: includes/class-account-hooks.php:79
+msgid "First name"
+msgstr "الاسم الأول"
+
+#: includes/class-account-hooks.php:48
+#: includes/class-account-hooks.php:80
+msgid "Last name"
+msgstr "اسم العائلة"
+
+#: includes/class-account-hooks.php:59
+msgid "Required"
+msgstr "مطلوب"
+
+#. translators: %s: field label, e.g. "First name".
+#: includes/class-account-hooks.php:86
+#, php-format
+msgid "<strong>%s</strong> is required."
+msgstr "<strong>%s</strong> مطلوب."
+
+#. translators: 1: field label, 2: maximum number of characters.
+#: includes/class-account-hooks.php:89
+#, php-format
+msgid "<strong>%1$s</strong> must be %2$d characters or fewer."
+msgstr "يجب ألا يزيد <strong>%1$s</strong> عن %2$d حرفًا."
+
 #: includes/class-checkout-hooks.php:60
 msgid "<strong>Billing phone</strong> must contain between 7 and 15 digits."
 msgstr "<strong>رقم هاتف الفوترة</strong> يجب أن يحتوي على 7 إلى 15 رقمًا."
@@ -43,29 +69,37 @@ msgstr "موعد الشحن المتوقع (نوفا):"
 msgid "Channel:"
 msgstr "القناة:"
 
-#: includes/class-content-translation.php:269
+#: includes/class-content-translation.php:272
 msgid "Free shipping"
 msgstr "شحن مجاني"
 
-#: includes/class-content-translation.php:270
+#: includes/class-content-translation.php:273
 msgid "Standard shipping"
 msgstr "شحن عادي"
 
-#: includes/class-content-translation.php:271
+#: includes/class-content-translation.php:274
 msgid "Cash on delivery"
 msgstr "الدفع عند الاستلام"
 
-#: includes/class-content-translation.php:272
+#: includes/class-content-translation.php:275
 msgid "Pay in cash when your order arrives."
 msgstr "ادفع نقدًا عند وصول طلبك."
 
-#: includes/class-content-translation.php:273
+#: includes/class-content-translation.php:276
 msgid "Please have the exact amount ready for the courier."
 msgstr "يُرجى تجهيز المبلغ المطلوب بالضبط لمندوب التوصيل."
 
-#: includes/class-content-translation.php:274
+#: includes/class-content-translation.php:277
 msgid "Premium tech accessories for focused work"
 msgstr "إكسسوارات تقنية فاخرة لعمل أكثر تركيزًا"
+
+#: includes/class-content-translation.php:279
+msgid "Your personal data will be used to support your experience throughout this website, to manage access to your account, and for other purposes described in our [privacy_policy]."
+msgstr "ستُستخدم بياناتك الشخصية لدعم تجربتك في هذا الموقع، ولإدارة الوصول إلى حسابك، ولأغراض أخرى موضّحة في [privacy_policy]."
+
+#: includes/class-content-translation.php:280
+msgid "Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our [privacy_policy]."
+msgstr "ستُستخدم بياناتك الشخصية لمعالجة طلبك، ودعم تجربتك في هذا الموقع، ولأغراض أخرى موضّحة في [privacy_policy]."
 
 #. translators: %s: formatted date, e.g. "Wed, 29 Oct".
 #: includes/class-product-hooks.php:76
@@ -250,7 +284,7 @@ msgstr ""
 msgid "Arabic description"
 msgstr ""
 
-#: nova-store-core.php:72
+#: nova-store-core.php:73
 msgid "NOVA Store Core requires WooCommerce to be installed and active."
 msgstr ""
 

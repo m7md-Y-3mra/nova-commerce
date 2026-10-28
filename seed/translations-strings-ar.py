@@ -80,4 +80,11 @@ PLUGIN = {
  "On sale: %d percent off": "تخفيض: خصم %d بالمئة",
  "%s is not a known product category.": "%s ليست فئة منتجات معروفة.",
  "Delivery and guarantees": "التوصيل والضمانات",
+ "First name": "الاسم الأول",
+ "Last name": "اسم العائلة",
+ "Required": "مطلوب",
+ "<strong>%s</strong> is required.": "<strong>%s</strong> مطلوب.",
+ "<strong>%1$s</strong> must be %2$d characters or fewer.": "يجب ألا يزيد <strong>%1$s</strong> عن %2$d حرفًا.",
+ "Your personal data will be used to support your experience throughout this website, to manage access to your account, and for other purposes described in our [privacy_policy].": "ستُستخدم بياناتك الشخصية لدعم تجربتك في هذا الموقع، ولإدارة الوصول إلى حسابك، ولأغراض أخرى موضّحة في [privacy_policy].",
+ "Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our [privacy_policy].": "ستُستخدم بياناتك الشخصية لمعالجة طلبك، ودعم تجربتك في هذا الموقع، ولأغراض أخرى موضّحة في [privacy_policy].",
 }
