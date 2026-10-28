@@ -1,241 +1,319 @@
-# NOVA Store — WordPress + WooCommerce demo
+# NOVA Store
 
-A premium tech-accessories store built the WordPress way: a **custom classic theme** (`nova-store`) for presentation and a **custom plugin** (`nova-store-core`) for business logic, on top of stock **WordPress 7.1.3** and **WooCommerce 11.2.1**. It runs in Docker.
+[![CI/CD](https://github.com/m7md-Y-3mra/nova-commerce/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/m7md-Y-3mra/nova-commerce/actions/workflows/ci-cd.yml)
 
-The storefront is **bilingual: English and Arabic (العربية)**, with a full right-to-left layout. Visitors switch language from the header; the admin stays in English.
+**A bilingual (English / العربية) online store for premium tech accessories, built on WordPress and WooCommerce.**
 
-**Live demo:** <https://techscope.alwaysdata.net/nova/> (English) · <https://techscope.alwaysdata.net/nova/?lang=ar> (Arabic). Hosted on the alwaysdata free plan; see [Deploying to alwaysdata](#deploying-to-alwaysdata).
+NOVA Store is a complete storefront: catalog, cart, checkout, customer accounts, an admin for products and orders, and a public product API. It is built with a custom theme for the look and a custom plugin for the store rules. WordPress and WooCommerce themselves are left untouched, so they can be updated safely.
 
-Local URLs after `./bin/setup.sh`:
-
-- Storefront: <http://localhost:8090> (English) · <http://localhost:8090/?lang=ar> (Arabic)
-- Admin: <http://localhost:8090/wp-admin>. The user is `admin`, and the password is the one you set in `.env`.
-- Public API: <http://localhost:8090/wp-json/nova-store/v1/featured-products>
-
-> This is a demo. Payments are **Cash on Delivery only** and no real money is processed. The code follows WordPress security practices, but it has **not** had a production security review.
+| | |
+|---|---|
+| **Live preview** | <https://techscope.alwaysdata.net/nova/> · [Arabic](https://techscope.alwaysdata.net/nova/?lang=ar) |
+| **Stack** | WordPress 7.1.3 · WooCommerce 11.2.1 · PHP 8.3 (local) / 8.4 (hosting) · MariaDB 11.8 |
+| **Custom code** | `nova-store` theme · `nova-store-core` plugin |
+| **Local setup** | Docker, with one command (`./bin/setup.sh`) |
+| **Deployment** | Automatic on every push to `main` (GitHub Actions → alwaysdata) |
 
 ---
 
 ## Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Quick start](#quick-start)
-3. [Daily commands](#daily-commands)
-4. [Project structure](#project-structure)
-5. [Architecture](#architecture)
-6. [Custom hooks](#custom-hooks)
-7. [REST endpoint](#rest-endpoint)
-8. [Languages (English / العربية)](#languages-english--العربية)
-9. [Security decisions](#security-decisions)
-10. [Sample data](#sample-data)
-11. [Testing checklist](#testing-checklist)
-12. [Code quality](#code-quality)
-13. [Deploying to alwaysdata](#deploying-to-alwaysdata)
-14. [Troubleshooting](#troubleshooting)
-15. [Interview walkthrough](#interview-walkthrough)
-16. [Known limitations](#known-limitations)
-17. [Image credits](#image-credits)
+1. [Features](#features)
+2. [Getting started](#getting-started)
+3. [Running the store (admin guide)](#running-the-store-admin-guide)
+4. [Customer accounts](#customer-accounts)
+5. [Languages](#languages)
+6. [How it is built](#how-it-is-built)
+7. [Public API](#public-api)
+8. [Deployment](#deployment)
+9. [Security](#security)
+10. [Quality and testing](#quality-and-testing)
+11. [Before going live](#before-going-live)
+12. [Troubleshooting](#troubleshooting)
+13. [Credits](#credits)
 
 ---
 
-## Prerequisites
+## Features
 
-| Tool | Version used | Needed for |
-|---|---|---|
-| Docker Engine + Compose v2 | 29.x / 5.x | Running WordPress, MariaDB and WP-CLI |
-| Free port 8090 | — | The storefront (change `WP_PORT` in `.env` if it is taken) |
-| PHP 8.1+ and Composer *(optional)* | 8.5 / 2.x | Local `php -l` and PHPCS only; the site runs PHP 8.3 inside Docker |
+**Shopping**
+- Home page with a hero, category tiles, *Featured gear*, a promo band and *On sale now*.
+- Shop with category filters, search, sorting (popularity, price, latest) and pagination.
+- Product pages with a zoomable gallery, a sticky buy box, specs and a **trust block**: the dispatch date ("Ships by Wed, 28 Oct"), the free-shipping limit, the returns window and the warranty.
+- Clear stock labels ("Only 2 left in stock", "Sold out — restocking soon") and real discount badges ("−12%").
+- Cart updates without a page reload. Free shipping above $99, otherwise $9.95.
 
-Nothing else needs to be installed on the host: WP-CLI runs from the official `wordpress:cli` image.
+**Checkout and orders**
+- Classic WooCommerce checkout with **Cash on Delivery**.
+- The server checks the phone number (7–15 digits) so the courier can always call.
+- Every order stores its promised dispatch date. Customers see it on the confirmation page; staff see it in the admin.
 
-## Quick start
+**Customer accounts**
+- Separate **Log in** (`/login/`) and **Create account** (`/register/`) pages.
+- Sign-up asks for a first and last name, an e-mail and a password, and logs the customer in straight away.
+- Customers can also create an account during checkout.
+
+**Two languages**
+- English and Arabic, with a full right-to-left layout and an Arabic font.
+- Shoppers switch from the header, and the choice is remembered.
+- Products, categories and pages have an *Arabic translation* box in the admin.
+
+**For staff and developers**
+- Products, stock, orders and customers are managed in the standard WooCommerce admin.
+- A **WooCommerce → NOVA Store** settings page holds the delivery and label rules.
+- A public read-only JSON API for featured products.
+- One-command local setup, automatic deploys and a post-deploy check of the live site.
+
+---
+
+## Getting started
+
+### Requirements
+
+| Tool | Needed for |
+|---|---|
+| Docker Engine + Compose v2 | Running WordPress, MariaDB and WP-CLI |
+| Port 8090 free | The local site (change `WP_PORT` in `.env` if it is taken) |
+| PHP 8.1+ and Composer *(optional)* | Running the code checks outside Docker |
+| `python3` and GNU `gettext` *(optional)* | Rebuilding translation files |
+
+### Install
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and replace every `change-me-*` value with your own passwords. Then run:
+Open `.env` and replace every `change-me-*` value with your own passwords. Then run:
 
 ```bash
 ./bin/setup.sh
 ```
 
-The script is idempotent, so you can re-run it safely. It does the following:
+The script can be re-run safely. It starts the containers and installs WordPress and the pinned WooCommerce version. It also installs the Arabic language packs, activates the theme and plugin, and loads the sample catalog: 5 categories and 19 products, in English and Arabic.
 
-1. Starts MariaDB and WordPress (`docker compose up -d`).
-2. Installs WordPress core and sets pretty permalinks (`/%postname%/`, which `/wp-json/` needs).
-3. Installs **WooCommerce 11.2.1** from wordpress.org (version pinned) and activates it. It also deletes the unused Hello Dolly and Akismet plugins.
-4. Installs the official **Arabic language packs** for WordPress core and WooCommerce (`wp language core|plugin install … ar`). They are installed but not activated: the site language stays English, and the plugin switches the storefront per visitor.
-5. Activates the `nova-store` theme and the `nova-store-core` plugin.
-6. Runs `seed/seed.php`, which:
-   - sets the store options and turns off WooCommerce's *coming soon* mode;
-   - enables COD only;
-   - sets up shipping: free over $99, otherwise $9.95;
-   - creates the pages and switches cart/checkout to classic shortcodes;
-   - adds 5 categories, 19 products with images, and the menus;
-   - writes the Arabic copy of every product, category and page (from `seed/translations-ar.php`).
+| | URL |
+|---|---|
+| Store | <http://localhost:8090> · <http://localhost:8090/?lang=ar> |
+| Admin | <http://localhost:8090/wp-admin> (user `admin`, password from `.env`) |
+| Log in / Create account | <http://localhost:8090/login/> · <http://localhost:8090/register/> |
+| API | <http://localhost:8090/wp-json/nova-store/v1/featured-products> |
 
-Then open <http://localhost:8090>.
+### Everyday commands
 
-## Daily commands
+Start the stack:
 
 ```bash
 docker compose up -d
 ```
 
+Stop it:
+
 ```bash
 docker compose stop
 ```
+
+Follow the WordPress logs:
 
 ```bash
 docker compose logs -f wordpress
 ```
 
+Run any WP-CLI command, for example:
+
 ```bash
 docker compose run --rm wpcli plugin list
 ```
+
+Reload the sample catalog (this **resets prices and stock**):
 
 ```bash
 docker compose run --rm wpcli eval-file /seed/seed.php --user=admin
 ```
 
-The last one re-seeds the catalog and resets prices and stock.
+To start over completely, run `docker compose down -v`, then `./bin/setup.sh` again. **`down -v` permanently deletes the local database and uploads.**
 
-To reset everything, run `docker compose down -v` and then `./bin/setup.sh`. **`down -v` permanently deletes the database and uploads volumes**, including any demo orders.
+---
 
-## Project structure
+## Running the store (admin guide)
+
+Everything is managed from **wp-admin** with standard WooCommerce screens.
+
+| Task | Where |
+|---|---|
+| Add or edit a product, price, sale price or images | **Products → Add New / All Products** |
+| Track stock | Product → *Inventory* tab → *Manage stock* + quantity. "Only X left" appears automatically at or below the threshold. |
+| Feature a product on the home page | Click the ★ in **Products → All Products** |
+| Arabic text for a product or page | The **Arabic translation (العربية)** box under the editor. Leave a field empty to show the English text. |
+| Arabic name for a category | **Products → Categories** → *Arabic name* / *Arabic description* |
+| See and process orders | **WooCommerce → Orders**. Each order shows "Estimated dispatch (NOVA)". |
+| See customers | **WooCommerce → Customers** or **Users** |
+| Free-shipping limit and shipping prices | **WooCommerce → Settings → Shipping**. The header, home page and product pages follow it automatically. |
+| Dispatch time, returns window, warranty, low-stock label | **WooCommerce → NOVA Store** |
+| Clear the API cache | **WooCommerce → NOVA Store → Clear cache now** (it also clears itself when products change) |
+| Turn customer registration on or off | **WooCommerce → Settings → Accounts & Privacy** |
+
+---
+
+## Customer accounts
+
+| Page | What it does |
+|---|---|
+| `/login/` | Log-in form, with a link to *Create an account* and *Lost your password?* |
+| `/register/` | First name, last name, e-mail and password. On success the customer is logged in and sees "Hello *First Last*". |
+| `/my-account/` | Orders, addresses and account details. Visitors who are not logged in are sent to `/login/`. |
+| Checkout | *Create an account?* creates the customer together with the order. |
+
+- Customers choose their own password, and WooCommerce's strength meter shows on the form.
+- Logged-in customers who open `/login/` or `/register/` go straight to My Account.
+- Password reset uses WooCommerce's standard flow. After a reset, the customer lands on `/login/` with a confirmation message.
+
+---
+
+## Languages
+
+The store runs in **English** or **Arabic**. The admin always stays in English.
+
+**How the language is chosen**
+1. `?lang=en` or `?lang=ar` in the URL. This also works on the API.
+2. Otherwise, the visitor's earlier choice, saved in a cookie for one year.
+3. Otherwise, English.
+
+**Where the Arabic comes from**
+
+| Text | Source |
+|---|---|
+| WordPress and WooCommerce screens (cart, checkout, account, notices) | Official Arabic language packs |
+| Theme and plugin text | `languages/*.po` / `.mo` files in the theme and plugin |
+| Products, categories and pages | The *Arabic translation* fields in the admin |
+| Store settings (shipping names, payment texts, privacy notes, tagline) | A translation map in the plugin |
+
+**Right-to-left layout.** One stylesheet serves both directions, because it uses CSS logical properties. Arabic pages load *IBM Plex Sans Arabic*, and arrows are mirrored. Prices, phone numbers and e-mail addresses stay left-to-right.
+
+**Updating interface translations.** Add the English → Arabic pair to `seed/translations-strings-ar.py`, then run:
+
+```bash
+./bin/i18n.sh
+```
+
+This needs the stack running. It extracts the strings, fills the Arabic `.po` files and compiles the `.mo` files, then prints how many strings are still untranslated. The untranslated ones are admin-only strings, which is intentional.
+
+---
+
+## How it is built
+
+```
+Browser ──► Apache + PHP
+              ├── WordPress core          (never edited)
+              ├── WooCommerce             (never edited, version pinned)
+              ├── nova-store-core plugin  business rules, hooks, API, settings, languages, account pages
+              └── nova-store theme        templates, CSS/JS, layout, RTL
+                         │
+                         ▼
+                      MariaDB
+```
+
+**Key decisions**
+
+- **Theme for the look, plugin for the rules.** If the theme is replaced, these keep working:
+  - delivery dates and stock labels;
+  - discount badges and checkout validation;
+  - order data, account pages and the API.
+
+  The two only talk through filters (`nova_store_free_shipping_threshold`, `nova_store_languages`, `nova_store_account_url`). Neither breaks if the other is missing.
+- **Hooks, not copied templates.** The theme does not copy WooCommerce template files; it changes the layout with WooCommerce's own hooks, so a WooCommerce update cannot leave outdated copies behind.
+- **Classic cart and checkout.** The store uses the `[woocommerce_cart]` and `[woocommerce_checkout]` shortcodes, because the plugin's checkout rules use the classic PHP hooks. Block checkout would need the Store API equivalent, `woocommerce_store_api_checkout_update_order_from_request`.
+- **One source for free shipping.** The limit is read from the WooCommerce shipping zone, so every label matches what checkout charges.
+
+### Project structure
 
 ```
 .
-├── docker-compose.yml          # db (MariaDB 11.8) · wordpress (7.1.3, PHP 8.3) · wpcli (profile "cli")
-├── .env.example                # placeholders only; real .env is git-ignored
+├── docker-compose.yml              # db (MariaDB) · wordpress · wpcli
+├── .env.example                    # placeholders only; the real .env is git-ignored
+├── .github/workflows/ci-cd.yml     # checks every push/PR; deploys main
 ├── bin/
-│   ├── setup.sh                # idempotent bootstrap (WP-CLI)
-│   ├── i18n.sh                 # rebuild .pot → Arabic .po → .mo for theme + plugin
-│   └── po-fill.py              # merges Arabic strings into a .po (used by i18n.sh)
-├── .github/workflows/ci-cd.yml  # lint on every push/PR; deploy + smoke test on main
+│   ├── setup.sh                    # local install (re-runnable)
+│   ├── i18n.sh                     # rebuild translation files
+│   └── po-fill.py                  # used by i18n.sh
 ├── deploy/
-│   ├── alwaysdata-push.sh      # local: upload code over SSH, run the installer
-│   └── alwaysdata-install.sh   # server: WordPress + WooCommerce + theme/plugin + seed (re-runnable)
+│   ├── alwaysdata-push.sh          # uploads the code and runs the installer
+│   └── alwaysdata-install.sh       # server-side install/update (re-runnable)
 ├── seed/
-│   ├── seed.php                # store config + catalog, matched by SKU (re-runnable)
-│   ├── translations-ar.php     # Arabic catalog content: products, categories, pages
-│   ├── translations-strings-ar.py  # Arabic interface strings (source for the .po files)
-│   └── images/                 # product photos (Unsplash License)
-├── composer.json / phpcs.xml.dist   # WPCS 3 + PHPCompatibilityWP dev tooling
+│   ├── seed.php                    # store settings + sample catalog (matched by SKU)
+│   ├── account-pages.php           # creates /login/ and /register/ (re-runnable)
+│   ├── translations-ar.php         # Arabic catalog content
+│   ├── translations-strings-ar.py  # Arabic interface strings
+│   └── images/                     # product photos
 └── wp-content/
-    ├── themes/nova-store/      # PRESENTATION
-    │   ├── style.css           # theme header
-    │   ├── functions.php       # supports, menus, asset enqueueing
-    │   ├── inc/template-tags.php   # icons, cart link, category helpers, language switcher
-    │   ├── inc/woocommerce.php     # WooCommerce layout via hooks (no template copies)
-    │   ├── header.php · footer.php · front-page.php · page.php · index.php · 404.php
-    │   ├── template-parts/home/    # hero, values, categories, products row, promo
-    │   ├── languages/              # nova-store.pot, ar.po, ar.mo
-    │   └── assets/{css,js,img}     # main.css uses CSS logical properties (works LTR and RTL)
+    ├── themes/nova-store/          # PRESENTATION
+    │   ├── functions.php · header.php · footer.php · front-page.php · page.php · 404.php
+    │   ├── inc/template-tags.php   # icons, cart link, language switcher
+    │   ├── inc/woocommerce.php     # WooCommerce layout via hooks
+    │   ├── template-parts/home/    # home page sections
+    │   ├── languages/
+    │   └── assets/{css,js,img}
     └── plugins/nova-store-core/    # BUSINESS LOGIC
-        ├── nova-store-core.php     # bootstrap, HPOS compatibility, WooCommerce dependency check
+        ├── nova-store-core.php     # bootstrap, HPOS compatibility, WooCommerce check
         ├── includes/
-        │   ├── class-languages.php           # language detection (?lang / cookie), locale filter, hreflang
-        │   ├── class-content-translation.php # swaps in Arabic product/page/category content
-        │   ├── class-translation-admin.php   # "Arabic translation" fields in wp-admin
-        │   ├── class-settings.php          # WooCommerce → NOVA Store settings (Settings API)
-        │   ├── class-delivery.php          # free-shipping threshold + dispatch-date rules
-        │   ├── class-product-hooks.php     # product page / label hooks
-        │   ├── class-checkout-hooks.php    # checkout validation + order meta
-        │   ├── class-account-hooks.php     # register form: first/last name
-        │   ├── class-account-pages.php     # /login/ and /register/ pages + redirects
+        │   ├── class-languages.php            # language detection, locale, hreflang
+        │   ├── class-content-translation.php  # Arabic product/page/category content
+        │   ├── class-translation-admin.php    # "Arabic translation" admin fields
+        │   ├── class-settings.php             # WooCommerce → NOVA Store settings
+        │   ├── class-delivery.php             # free-shipping + dispatch-date rules
+        │   ├── class-product-hooks.php        # trust block, stock labels, sale badge
+        │   ├── class-checkout-hooks.php       # phone check, order meta
+        │   ├── class-account-hooks.php        # name fields on sign-up
+        │   ├── class-account-pages.php        # /login/, /register/, redirects
         │   └── class-rest-featured-products.php
-        ├── languages/                  # nova-store-core.pot, nova-store-core-ar.po/.mo
-        ├── templates/                  # trust-block.php, login-form.php, register-form.php
-        └── assets/css/nova-store-core.css
+        ├── templates/              # trust-block, login-form, register-form
+        ├── languages/
+        └── assets/css/
 ```
 
-Only the theme and plugin folders are bind-mounted into the container. WordPress core and WooCommerce live in a Docker volume and are **never edited**.
+<details>
+<summary><strong>Custom hooks reference</strong> (for developers)</summary>
 
-## Architecture
+All in `wp-content/plugins/nova-store-core/includes/`. Each was checked against the WooCommerce 11.2.1 source.
 
-```
-Browser ──► Apache/PHP 8.3 (wordpress container)
-              ├── WordPress core 7.1.3        (untouched, Docker volume)
-              ├── WooCommerce 11.2.1          (untouched, installed by WP-CLI)
-              ├── nova-store-core plugin      (rules, hooks, REST, settings, language switching)
-              └── nova-store theme            (templates, CSS/JS, layout hooks, RTL styles)
-                         │
-                         ▼
-                   MariaDB 11.8 (db container, not exposed to the host)
-```
+| Hook | Type | What it does |
+|---|---|---|
+| `woocommerce_single_product_summary` | action, priority 35 | Trust block between add-to-cart (30) and product meta (40). Markup in `templates/trust-block.php`. |
+| `woocommerce_get_availability_text` | filter | "Only X left in stock", "Sold out — restocking soon", "In stock". |
+| `woocommerce_get_availability_class` | filter | Adds `low-stock` so the label turns amber. |
+| `woocommerce_sale_flash` | filter | Real discount ("−12%"), including the largest one for variable products. |
+| `woocommerce_after_checkout_validation` | action | Phone must have 7–15 digits; blocks the order on the server. |
+| `woocommerce_checkout_create_order` | action | Saves `_nova_estimated_dispatch` and `_nova_sales_channel` (HPOS-safe CRUD). |
+| `woocommerce_order_details_after_order_table` | action | Shows the dispatch date to the customer. |
+| `woocommerce_admin_order_data_after_shipping_address` | action | Shows dispatch date and channel to staff. |
+| `woocommerce_register_form_start` | action | First/last name fields on the register form. |
+| `woocommerce_register_post` | action | Requires both names (max 60 characters); register page only, not checkout. |
+| `woocommerce_created_customer` | action | Saves the names on the user and as billing name. |
+| `[nova_login_form]`, `[nova_register_form]` | shortcodes | The `/login/` and `/register/` pages; render WooCommerce's own forms. |
+| `template_redirect` | action | Logged out: My Account → `/login/`. Logged in: `/login/`, `/register/` → My Account. |
+| `woocommerce_is_account_page` | filter | Treats `/login/` and `/register/` as account pages (no-cache, strength meter). |
+| `locale` | filter | Picks English or Arabic per visitor, before translations load. |
+| `woocommerce_cart_fragment_name` | filter | Keeps the header cart's cached text per language. |
+| `nova_store_free_shipping_threshold` | custom filter | Free-shipping amount for the theme. |
+| `nova_store_languages` | custom filter | Language switcher data for the theme. |
+| `nova_store_account_url` | custom filter | Header account link: `/login/` or My Account. |
 
-**Theme vs plugin split.** If you switch to another theme, the business behaviour stays: delivery block, stock labels, discount badges, checkout validation, order meta and the API. If you disable the plugin, the theme still renders. The theme reads the free-shipping threshold through `apply_filters( 'nova_store_free_shipping_threshold', null )` and never calls plugin functions directly.
+Arabic content uses `the_title`, `the_content`, `woocommerce_product_get_name`, `get_product_cat`, `nav_menu_item_title`, `woocommerce_get_privacy_policy_text` and related filters. They only run on Arabic requests and fall back to English when a field is empty.
 
-**Native WooCommerce, not a rebuild.** All of these are WooCommerce features that the theme only styles:
+</details>
 
-- the shop, category archives, search, sorting (popularity, price, latest), pagination and stock management;
-- the cart and its fragments;
-- checkout, orders, emails and the admin screens.
+---
 
-The home page product rows use the native `[products]` shortcode, so visibility, pricing and add-to-cart behave exactly as they do in the shop.
-
-**Hooks instead of template overrides.** The theme copies no files into `theme/woocommerce/`. Layout is changed with `remove_action` / `add_action` on WooCommerce's own hooks, which means a WooCommerce update cannot leave stale template copies behind.
-
-**Classic cart and checkout.** WooCommerce 11 creates *block* cart and checkout pages by default. Block checkout runs through the Store API and does **not** fire classic PHP hooks such as `woocommerce_after_checkout_validation`. This project deliberately switches those pages to `[woocommerce_cart]` and `[woocommerce_checkout]`, so the classic hook pipeline used by the plugin applies. On block checkout, the equivalent hook would be `woocommerce_store_api_checkout_update_order_from_request`.
-
-**Single source of truth for free shipping.** The plugin reads the threshold from the *Free shipping* method's minimum amount in the WooCommerce shipping zones. The announcement bar, values strip and product trust block always match what checkout actually charges. Change it under WooCommerce → Settings → Shipping and every label follows.
-
-## Custom hooks
-
-All of these are in `wp-content/plugins/nova-store-core/includes/`. Every hook was checked against the installed WooCommerce 11.2.1 source.
-
-| # | Hook | Type / priority | Where it runs | What it does |
-|---|---|---|---|---|
-| 1 | `woocommerce_single_product_summary` | action, **35** | Single product page, summary column. It sits between add-to-cart (30) and SKU/category meta (40). | Renders the **trust block**: "Ships by *Wed, 28 Oct*" (counted in business days), "Free shipping on orders over $99", returns window and warranty. Each item can be configured. Markup lives in `templates/trust-block.php`. |
-| 2 | `woocommerce_get_availability_text` | filter, `($availability, $product)` | Wherever WooCommerce prints stock HTML: the product page, plus shop grids via `wc_get_stock_html()` in the theme | Returns **"Only 3 left in stock"** at or below the threshold, **"Sold out — restocking soon"** when out of stock, and **"In stock"** for unmanaged stock. (WooCommerce prints nothing for unmanaged stock.) |
-| 3 | `woocommerce_get_availability_class` | filter | Same places as #2 | Adds a `low-stock` CSS class so the theme can colour the label amber. |
-| 4 | `woocommerce_sale_flash` | filter, `($html, $post, $product)` | Sale badge in loops and on the product page | Replaces "Sale!" with the real discount, e.g. **"−12%"**. For variable products it shows the largest variation discount. |
-| 5 | `woocommerce_after_checkout_validation` | action, `($data, $errors)` | Server side, after WooCommerce validates checkout fields | Requires the billing phone to have **7–15 digits**. (WooCommerce only checks which characters are used, so "+++" passes.) Adding to `$errors` blocks the order and highlights the field. |
-| 6 | `woocommerce_checkout_create_order` | action, `($order, $data)` | While the order object is built, before WooCommerce calls `save()` | Stores `_nova_estimated_dispatch` and `_nova_sales_channel` through `$order->update_meta_data()`, which is HPOS-safe. Totals, payment and stock are untouched. |
-| 7 | `woocommerce_order_details_after_order_table` | action | Thank-you page and My Account → order | Shows the customer "Estimated dispatch: …". |
-| 8 | `woocommerce_admin_order_data_after_shipping_address` | action | Admin order edit screen | Shows the dispatch date and sales channel to staff. |
-| 9 | `nova_store_free_shipping_threshold` | custom filter | Theme header, values strip | Decouples the theme from the plugin. |
-| 10 | `locale` | filter (core) | Every storefront request, registered before WordPress loads translations | Returns `ar` or `en_US` for the visitor's language, so core, WooCommerce, the theme and the plugin all load matching translations and WordPress turns on RTL. Admin screens are skipped. |
-| 11 | `nova_store_languages` | custom filter | Theme header and mobile menu | Gives the theme the switcher data (name, URL, current) without calling plugin code. |
-| 12 | `woocommerce_cart_fragment_name` | filter | Cart fragments (AJAX header cart) | Adds the language to the fragment cache key, so the header never shows the other language's cart text. |
-| 13 | `woocommerce_register_form_start` | action | My Account → Register, above the e-mail field | Adds required **First name** / **Last name** fields, refilled after a failed submit. |
-| 14 | `woocommerce_register_post` | action, `($username, $email, $errors)` | Server side, before the customer is created | Requires both names (max 60 characters). Checkout's "Create an account?" fires the same hook, so it only acts on the My Account form (checkout has billing names). |
-| 15 | `woocommerce_created_customer` | action | Right after the customer is inserted | Saves the names on the user and as the default billing name through `WC_Customer`, so the dashboard says "Hello Sara Ali". |
-| 16 | `[nova_login_form]`, `[nova_register_form]` | shortcodes | The *Log in* (`/login/`) and *Create account* (`/register/`) pages | Render WooCommerce's own login/register forms (same field names, nonces and hooks), notices first. Created by `seed/account-pages.php`, which the installer re-runs on every deploy. |
-| 17 | `template_redirect` | action | Every page view (GET only) | Logged out: My Account → `/login/` (lost password excluded). Logged in: `/login/`, `/register/` → My Account. |
-| 18 | `woocommerce_is_account_page` | filter | `/login/`, `/register/` | Treats them as account pages: password-strength script, no-cache headers, no hreflang. |
-| 19 | `nova_store_account_url` | custom filter | Theme header account icon | `/login/` for visitors, My Account once logged in. |
-
-The content filters used for Arabic (`the_title`, `the_content`, `woocommerce_product_get_name`, `get_product_cat`, …) are listed under [Languages](#languages-english--العربية).
-
-The plugin also uses `rest_api_init`, `before_woocommerce_init` (HPOS compatibility declaration), `admin_menu`, `admin_init`, `admin_post_*`, and the `woocommerce_*product*` save/stock actions for cache invalidation.
-
-## REST endpoint
+## Public API
 
 ```
 GET /wp-json/nova-store/v1/featured-products
 ```
 
-| Param | Type | Default | Rules |
-|---|---|---|---|
-| `per_page` | integer | 4 | 1–12. Anything else → **400** |
-| `category` | string | — | Must be an existing `product_cat` slug, else **400** |
-| `lang` | string | visitor's saved choice, then `en` | `en` or `ar`. Anything else → **400** |
-
-**Implementation**
-
-- Products are fetched with `wc_get_products()` using `status=publish`, `featured=true`, `visibility=catalog` and sort order. Password-protected products are skipped.
-- Each item is built from an explicit **field allow-list**, so nothing internal can leak.
-- Argument validation is declared in the route schema and enforced by core's `rest_parse_request_arg()`.
-- `permission_callback => '__return_true'` is deliberate and commented: the route returns only what an anonymous shopper already sees on `/shop/`.
-- Only `GET` is registered. Any other method → **404 `rest_no_route`**.
-- Responses are cached in transients for 10 minutes and sent with `Cache-Control: public, max-age=300` and `X-WP-Total`.
-- The cache is invalidated when a product is created, updated, deleted, or changes stock or visibility. Admins can also clear it from **WooCommerce → NOVA Store**.
-- The cache key includes the locale, so English and Arabic responses are cached separately. Each response has a `language` field.
-
-**Try it**
+| Parameter | Default | Rules |
+|---|---|---|
+| `per_page` | 4 | 1–12, otherwise **400** |
+| `category` | — | An existing product category slug, otherwise **400** |
+| `lang` | visitor's choice, then `en` | `en` or `ar`, otherwise **400** |
 
 ```bash
 curl -s "http://localhost:8090/wp-json/nova-store/v1/featured-products?per_page=2" | python3 -m json.tool
@@ -255,418 +333,281 @@ curl -s "http://localhost:8090/wp-json/nova-store/v1/featured-products?per_page=
             "price_formatted": "$219.00",
             "in_stock": true,
             "permalink": "http://localhost:8090/product/aura-anc-wireless-headphones/",
-            "image": {
-                "src": "http://localhost:8090/wp-content/uploads/2026/10/aura-anc-headphones-900x900.jpg",
-                "alt": "Aura ANC Wireless Headphones"
-            }
-        },
-        { "...": "..." }
+            "image": { "src": "…/aura-anc-headphones-900x900.jpg", "alt": "Aura ANC Wireless Headphones" }
+        }
     ]
 }
 ```
 
-Error cases:
+- **Read-only and public.** Only `GET` is registered, and it returns only what a shopper already sees on `/shop/`.
+- **Fixed fields.** Each product is built from an explicit list of fields, so nothing internal can leak.
+- **Cached.** Results are cached for 10 minutes, separately per language. The cache clears when a product, its stock or its visibility changes.
 
-```bash
-curl -s -i "http://localhost:8090/wp-json/nova-store/v1/featured-products?per_page=999" | head -1
-```
+---
 
-That returns `HTTP/1.1 400 Bad Request`. Other examples:
+## Deployment
 
-- `?per_page=abc` → 400 (`rest_invalid_param`).
-- `?category=nope` → 400.
-- `?category=audio` → featured audio products only.
-- `?lang=ar` → product names in Arabic, `"language": "ar"`.
-- `?lang=fr` → 400.
+The live preview runs on **alwaysdata** (free plan, PHP 8.4, SSH, no Docker). It is a fresh install plus the sample catalog; local orders and customers are never uploaded.
 
-```bash
-curl -s "http://localhost:8090/wp-json/nova-store/v1/featured-products?per_page=1&lang=ar" | python3 -m json.tool
-```
+### Automatic (GitHub Actions)
 
-## Languages (English / العربية)
+`.github/workflows/ci-cd.yml`:
 
-The storefront runs in English or Arabic. Arabic uses a full right-to-left layout and an Arabic font. The admin is not affected.
-
-### How the language is chosen
-
-For each storefront request, `Languages::current()` in `class-languages.php` picks the language in this order:
-
-1. `?lang=en` or `?lang=ar` in the URL. Links can be shared, and this also works on the REST API.
-2. Otherwise, the `nova_lang` cookie from an earlier choice. It is set when a visitor uses `?lang=`, and it lasts 1 year (HttpOnly, SameSite=Lax, Secure on HTTPS).
-3. Otherwise, English.
-
-Unknown values are ignored. The result goes to WordPress through the core `locale` filter. That filter is registered when the plugin file loads, before WordPress loads its translations, so one switch covers everything:
-
-| Text | Where the Arabic comes from |
+| Trigger | Jobs |
 |---|---|
-| WordPress core and WooCommerce screens (cart, checkout, account, notices, e-mails) | Official language packs from translate.wordpress.org, installed by `setup.sh` |
-| Theme strings (header, footer, home page sections) | `wp-content/themes/nova-store/languages/ar.mo` |
-| Plugin strings (trust block, stock labels, checkout error, order meta, API) | `wp-content/plugins/nova-store-core/languages/nova-store-core-ar.mo` |
-| Product, category and page content | Arabic copy saved in meta, swapped in by `Content_Translation` |
-| Store settings (shipping method names, COD texts, tagline) | Listed as gettext strings in `Content_Translation::translate_store_string()`, so the Arabic lives in the plugin `.po` |
+| Every push and pull request | **lint**: PHP syntax, WordPress Coding Standards, shell script syntax |
+| Push to `main` (or *Run workflow*) | **lint** → **deploy** → **smoke test** on the live URL |
 
-`is_admin()` requests always keep the site or user locale, so staff see wp-admin in English even with the Arabic cookie.
+The smoke test checks these pages on the live site:
+- the home page and the Arabic right-to-left home page;
+- the shop and a product page;
+- `/login/` and `/register/`;
+- the API.
 
-### Switcher and SEO
+It also fails if "demo" wording appears on the home page. Deploys run one at a time, because the free plan has 256 MB of RAM for the whole account.
 
-- The theme prints the switcher with `nova_store_language_switcher()` in the header, and inside the mobile menu on small screens. It gets its data from the `nova_store_languages` filter.
-- Switcher URLs are built from the configured `home_url()` plus the request path, never from the `Host` header.
-- On public pages the plugin prints `<link rel="alternate" hreflang="en|ar|x-default">`. Cart, checkout, account and 404 pages are skipped because they are private or not indexable.
+**Work on a branch, open a pull request, merge to `main`:** the merge deploys automatically.
 
-### Translated content
+<details>
+<summary><strong>One-time CI setup</strong></summary>
 
-`Content_Translation` only registers when the request is Arabic. For each item it uses the Arabic value when one exists, and falls back to English when it is empty.
-
-| Data | Stored in | Filters |
-|---|---|---|
-| Product / page title | post meta `_nova_ar_title` | `the_title`, `single_post_title` (browser tab), `woocommerce_product_get_name` (cart, checkout, orders, API), `nav_menu_item_title` |
-| Product short description | `_nova_ar_excerpt` | `woocommerce_short_description`, `woocommerce_product_get_short_description` |
-| Product description / page content | `_nova_ar_content` | `the_content` (priority 1, so blocks and shortcodes still run), `woocommerce_product_get_description` |
-| "Additional information" table | `_nova_ar_attributes` (English label → Arabic label + value) | `woocommerce_display_product_attributes` |
-| Category name and description | term meta `_nova_ar_name`, `_nova_ar_description` | `get_product_cat`, `nav_menu_item_title` |
-| Shipping labels, COD texts, tagline | gettext | `woocommerce_shipping_rate_label`, `option_woocommerce_cod_settings`, `option_blogdescription` |
-
-**Editing Arabic content in the admin.**
-
-- Products and pages have an **Arabic translation (العربية)** box under the editor, with title, short description (products only) and description/content fields.
-- **Products → Categories** has *Arabic name* and *Arabic description* fields.
-- Leave a field empty to show the English version.
-- Saving a product also clears the REST cache.
-
-### RTL design
-
-- `main.css` uses CSS logical properties (`margin-inline-start`, `padding-inline`, `inset-inline-end`, `text-align: start`, …), so one stylesheet works both ways. WordPress adds `dir="rtl"` to `<html>` automatically.
-- On Arabic pages the theme adds **IBM Plex Sans Arabic** from Google Fonts. Latin text keeps Inter/Manrope.
-- Arrow icons are mirrored. Prices, SKUs, phone and e-mail inputs stay left-to-right, so numbers read correctly.
-- Uppercase and letter-spacing are turned off for Arabic text, because Arabic has no capitals and spacing breaks the joined letters.
-
-### Updating translations
-
-Interface strings live in `seed/translations-strings-ar.py`: the `THEME` and `PLUGIN` dictionaries map English → Arabic. Plural strings use a `(singular, plural)` key and a list of the 6 Arabic plural forms. After you add or change a translatable string in PHP:
-
-```bash
-./bin/i18n.sh
-```
-
-The script:
-
-1. extracts the strings to `.pot` files with `wp i18n make-pot` (inside Docker);
-2. fills the Arabic `.po` files with `bin/po-fill.py`;
-3. compiles the `.mo` files with `msgfmt -c`, which checks placeholders and plural forms and prints the translated/untranslated counts. The untranslated plugin strings are admin-only, on purpose.
-
-It needs the stack running, plus `python3` and GNU `gettext` on the host. Catalog content is edited in `seed/translations-ar.php` (then re-seed) or directly in the admin.
-
-To add another language: add it to `Languages::available()`, install its language packs in `setup.sh`, add a strings file and `.po`/`.mo` pair, and add meta fields for its content.
-
-## Security decisions
-
-| Concern | What the code does |
-|---|---|
-| Secrets | `.env` is git-ignored; `.env.example` has placeholders only. MariaDB is not published to the host, and WordPress binds to `127.0.0.1` only. |
-| Core / plugin integrity | WordPress and WooCommerce are installed by WP-CLI into a volume and never modified. Only the theme and plugin are mounted. |
-| Output escaping | `esc_html`, `esc_attr`, `esc_url` everywhere. SVG icons are static strings defined in code. WooCommerce/shortcode output is echoed as-is, and that is annotated. |
-| Input handling | Settings go through `register_setting` with a `sanitize_callback`, which keeps only known keys and clamps integers. Checkout data arrives already sanitized by WooCommerce. REST args are schema-validated and slugs pass through `sanitize_title`. |
-| Nonces + capabilities | The settings form uses `settings_fields()` (nonce) and `options.php` verifies it. The capability is mapped to `manage_woocommerce` via `option_page_capability_*`. The cache-flush action uses `wp_nonce_field` + `check_admin_referer` + `current_user_can`. Tested: a bad nonce → 403, and an anonymous request is refused. |
-| Database | Only WordPress/WooCommerce APIs: `wc_get_products`, CRUD objects, options and transients. No raw SQL anywhere. |
-| Orders | Meta is written via `WC_Order::update_meta_data()`, and HPOS compatibility is declared. Nothing touches totals, payment or stock. |
-| Public API | GET only, allow-listed fields, bounded `per_page`, `lang` limited to an enum, no customer/order/config data. |
-| Language switch | `?lang` and the `nova_lang` cookie are checked against the list of supported languages (`sanitize_key` + allow-list), so nothing else reaches the `locale` filter. It is a display preference with no side effects, so it has no nonce (like a currency switcher). The cookie is HttpOnly and SameSite=Lax. Switcher links use `home_url()`, not the `Host` header. |
-| Customer registration | WooCommerce's own form handler: nonce, unique e-mail, password hashing and login. Shoppers choose their password (a generated one would be sent by the customer e-mail the deploy turns off). Names pass through `sanitize_text_field` and are length-checked. There is **no CAPTCHA or rate limit**, so a public site will get bot sign-ups; add one before taking real customers. |
-| Arabic content fields | Saved only with a valid nonce and `current_user_can( 'edit_post' / 'edit_term' )`. Titles go through `sanitize_text_field`, content through `wp_kses_post`; output is escaped again. Tested: a bad nonce left the data unchanged, and `<script>` was stripped on save. |
-| Payments | COD only. No card fields and no gateway credentials. |
-| Dependencies | WordPress 7.1.3, WooCommerce 11.2.1 (latest at build time), PHP 8.3, MariaDB 11.8. No other plugins are installed. |
-
-This project has **not** been through a professional security audit. Before going live you would still need, at minimum:
-
-- HTTPS;
-- hardened `wp-config` (`DISALLOW_FILE_EDIT`, salts);
-- rate limiting on login and REST;
-- a real mail server;
-- backups;
-- a review of third-party code.
-
-## Sample data
-
-`seed/seed.php` creates the following. Every row is matched by SKU, so re-running the seeder updates the catalog instead of duplicating it.
-
-| Category | Products |
-|---|---|
-| Audio (6) | Aura ANC Wireless Headphones *(featured, sale)* · Studio Pro Over-Ear *(featured)* · Reference Wired *(**sold out**)* · Pulse Earbuds *(featured, sale)* · Heritage Leather · Mono Bookshelf Speakers |
-| Keyboards (4) | Tactile 75 *(featured)* · Chroma 65 *(**low stock: 3**)* · Slim Wireless *(sale)* · Essential Wired |
-| Mice (3) | Glide Wireless · Phantom Ultralight *(featured)* · Vector RGB *(sale, **low stock: 4**)* |
-| Workspace (3) | Aluminium Laptop Stand *(featured)* · Arc LED Desk Lamp · Oak Monitor Riser |
-| Charging & Hubs (3) | Dock Pro USB-C Docking Station *(featured, **low stock: 2**)* · 65W GaN Charger · MagDock Wireless Charger *(sale)* |
-
-Each product also gets:
-
-- a SKU, a short description in bullets, a long description and an "Additional information" attributes table;
-- a `total_sales` value, so the popularity sort is meaningful;
-- an Arabic title, short description, description and attributes table.
-
-Categories, the cart, checkout, my-account and *Shipping & Returns* pages also get Arabic versions.
-
-To add products by hand, go to **Products → Add New** in the admin. Set the price, then on the *Inventory* tab enable "Manage stock" and enter a quantity. Featured status is the ★ in the product list.
-
-## Testing checklist
-
-These are the checks run for this build. Re-run them after any change.
-
-**Catalog**
-- [ ] Home shows the hero, values strip, 5 category tiles, *Featured gear* (4), the promo band, and *On sale now*.
-- [ ] `/shop/` shows 8 products per page with pagination (page 2 exists), category pills, search and sorting. *Sort by price* re-orders the grid.
-- [ ] `/?s=keyboard&post_type=product` returns the 4 keyboards plus the Oak Monitor Riser, whose description mentions keyboards.
-- [ ] Product page: gallery zoom and lightbox, price, stock label and trust block are present. The tabs show the description and attributes.
-- [ ] *Reference Wired Headphones* shows "Sold out — restocking soon" and has no add-to-cart button.
-- [ ] *Dock Pro* shows "Only 2 left in stock" in amber.
-
-**Cart**
-- [ ] Adding to cart from the grid uses AJAX: the button spins, shows ✓, and the header count updates without a reload.
-- [ ] Changing the quantity and clicking *Update cart* recalculates the line subtotal and total.
-- [ ] Removing a line shows the "removed. Undo?" notice.
-- [ ] Below $99 the Standard $9.95 rate applies; at $99 or more Free shipping appears.
-- [ ] An empty cart shows the icon, message, *Return to shop* and "Popular right now".
-
-**Checkout and orders**
-- [ ] The only payment method offered is Cash on delivery.
-- [ ] A phone of `12-34` blocks the order with "Billing phone must contain between 7 and 15 digits." (server side).
-- [ ] A valid phone takes you to *Order received*, which shows "Estimated dispatch: …".
-- [ ] In the admin, **WooCommerce → Orders** shows the order as *Processing*, with "Estimated dispatch (NOVA)" and "Channel: web-storefront" under the shipping address. The product's stock went down.
-
-**Accounts**
-- [ ] Logged out, the header account icon and `/my-account/` both lead to `/login/`. *Lost your password?* still opens My Account → Lost password.
-- [ ] `/login/` and `/register/` each show one form and link to each other.
-- [ ] A wrong password on `/login/` shows the error on `/login/`; a right one opens the dashboard. Logged in, `/login/` and `/register/` redirect to My Account.
-- [ ] On `/register/`, registering without a first name shows "First name is required."; a used e-mail shows "An account is already registered…".
-- [ ] A valid sign-up logs you in and the dashboard says "Hello *First Last*". Log out and log back in with the same e-mail and password.
-- [ ] Ticking *Create an account?* at checkout asks for a password and creates the customer with the order.
-- [ ] In Arabic, the name labels, errors and privacy note are Arabic.
-
-**API**
-- [ ] `featured-products` returns 200 with `count` / `products`.
-- [ ] `per_page=999`, `per_page=abc` and `category=nope` each return 400.
-- [ ] A `POST` returns 404.
-
-**Languages**
-- [ ] The header switcher shows *العربية*. Clicking it reloads the same page in Arabic, right-to-left, with the Arabic font.
-- [ ] Arabic home, shop, category and product pages show Arabic names, descriptions, attributes, breadcrumbs, trust block and stock labels ("بقيت قطعتان فقط" on *Dock Pro*).
-- [ ] The cart, shipping labels, checkout, COD texts and the phone error are in Arabic. An Arabic order shows the dispatch date in Arabic on *Order received*.
-- [ ] The choice is remembered on the next page without `?lang`. Switching back to English works the same way.
-- [ ] At 375 px the switcher is inside the mobile menu, and the RTL page never scrolls sideways.
-- [ ] wp-admin stays English with the Arabic cookie, and the *Arabic translation* box saves.
-- [ ] API: `lang=ar` returns Arabic names, `lang=fr` returns 400.
-
-**Admin settings**
-- [ ] **WooCommerce → NOVA Store** saves; out-of-range values are clamped.
-- [ ] *Clear cache now* shows the success notice.
-
-**Responsive**
-- [ ] At 375 px: the hamburger opens a full-screen menu with search, `Esc` closes it and returns focus to the toggle, and the page never scrolls horizontally.
-- [ ] Category tiles swipe sideways.
-- [ ] Product grids are 2-up.
-- [ ] Checkout is a single column.
-
-You can check the order from the command line:
-
-```bash
-docker compose run --rm wpcli wc shop_order list --user=admin --fields=id,status,total,payment_method
-```
-
-## Code quality
-
-```bash
-composer install
-```
-
-```bash
-composer lint
-```
-
-```bash
-vendor/bin/phpcs
-```
-
-`composer lint` runs `php -l` on every custom PHP file. PHPCS checks against the WordPress Coding Standards 3 and PHPCompatibilityWP (PHP 8.1+). Both currently pass with **0 errors and 0 warnings**.
-
-There are no automated PHPUnit or E2E tests. Verification was done manually with the checklist above, in a browser and with `curl`/WP-CLI.
-
-## Deploying to alwaysdata
-
-The store runs on the alwaysdata free plan (1 GB disk, PHP 8.4, SSH). alwaysdata has no Docker, so two scripts replace `setup.sh` there:
-
-| Script | Runs on | What it does |
-|---|---|---|
-| `deploy/alwaysdata-push.sh` | your machine | Uploads the theme, plugin and `seed/` to `~/nova-src` over SSH, then runs the installer. |
-| `deploy/alwaysdata-install.sh` | the server | Installs WordPress 7.1.3, WooCommerce 11.2.1 and the Arabic language packs into `~/www`, copies the theme and plugin, activates them and seeds the catalog. Safe to run again. |
-
-The live site is a **fresh install plus the seeder**. The local database is not copied, so local test orders and customer data stay on your machine.
-
-**One-time setup in the alwaysdata admin panel**
-
-1. *Databases → MySQL*: create a database named `<account>_nova`, and give the `<account>` user all rights on it.
-2. *Web → Sites*:
-   - **Empty account:** the default site at `https://<account>.alwaysdata.net`, with root `www/` and PHP 8.4, is fine.
-   - **Account that already hosts a site in `www/` (free plan):** the free plan allows one account per person and only the `<account>.alwaysdata.net` address, so a second account or a `nova.<account>.alwaysdata.net` address is not an option. Do not add a new site. Install into a sub-folder of the existing site instead: `DOCROOT=www/nova SITE_URL=https://<account>.alwaysdata.net/nova`. The installer writes `www/nova/.htaccess` with `RewriteBase /nova/`; Apache does not inherit the parent site's rewrite rules, so `/nova/...` goes to NOVA and every other URL still goes to the parent site.
-   - **Paid plan:** a separate site with its own domain and root directory `nova/` also works (`DOCROOT=nova SITE_URL=https://shop.example.com`).
-3. *Remote access → SSH*: enable password login, or add your SSH key.
-
-The installer refuses to run if its root directory already holds another theme, or a `wp-config.php` for a different database, so it cannot overwrite an existing site.
-
-**One-time password files on the server** (mode 600, never in the repo or on a command line):
-
-```bash
-printf '%s' 'YOUR_DB_PASSWORD' | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 077; cat > ~/.dbpass'
-```
-
-```bash
-printf '%s' 'YOUR_ADMIN_PASSWORD' | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 077; cat > ~/.adminpass'
-```
-
-Start these lines with a space so most shells keep them out of history. `~/.adminpass` is only read on the first install and can be deleted afterwards. If another site on the account already created `~/.dbpass` for the same database user, it can be reused.
-
-**Deploy (first time and every update):**
-
-```bash
-ALWAYSDATA_ACCOUNT=ACCOUNT ADMIN_EMAIL=you@example.com ./deploy/alwaysdata-push.sh
-```
-
-Optional variables: `SITE_URL` (the site's address), `DOCROOT` (root directory under your home, default `www`; `www/nova` for a sub-folder), `DB_NAME` (if not `<account>_nova`), `ADMIN_USER` (default `admin`). Later pushes only replace the theme and plugin code. The catalog is seeded on the first run only; add `RESEED=1` to reset products, prices and stock to the demo values.
-
-**What the installer sets up for alwaysdata**
-
-- **HTTPS behind the proxy.** TLS ends at alwaysdata's proxy, so `wp-config.php` sets `$_SERVER['HTTPS']` when `X-Forwarded-Proto` is `https`. Without this, secure cookies and `https` URLs break. `.htaccess` redirects HTTP to HTTPS using the same header.
-- **`.htaccess` is written by the script.** `wp rewrite flush --hard` cannot write it there, and without it every product URL returns 404.
-- **No customer e-mails.** alwaysdata really sends mail, and shoppers on a public demo can type someone else's address. The installer turns off the customer order and account e-mails; the admin "new order" e-mail and password resets stay on.
-- **Memory.** WP-CLI runs with `memory_limit=512M` because the seeder generates thumbnails for 19 images.
-- **Hardening.** `WP_DEBUG` off, `DISALLOW_FILE_EDIT` on, `wp-config.php` mode 600. The inactive `twentytwentyfive` theme stays installed so wp-admin still works if the custom theme ever fatals.
-- **Disk.** The install uses about 200 MB of the 1 GB.
-
-This is a demo deployment, not a security-reviewed production setup.
-
-### Continuous deployment (GitHub Actions)
-
-`.github/workflows/ci-cd.yml` runs on every push and pull request:
-
-1. **lint**: `composer lint` (PHP syntax), PHPCS (WordPress Coding Standards), and `bash -n` on the shell scripts.
-2. **deploy** (pushes to `main` only, after lint passes): runs `deploy/alwaysdata-push.sh` over SSH, then a smoke test checks the home page, Arabic RTL, shop, a product page and the REST endpoint on the live URL. Only one deploy runs at a time, because the free plan has 256 MB RAM for the whole account.
-
-It can also be started by hand from the *Actions* tab (*Run workflow*).
-
-**One-time setup.** Create an SSH key used only by CI, allow it on the server, and store it in GitHub:
+Create an SSH key that only CI uses:
 
 ```bash
 ssh-keygen -t ed25519 -N '' -C 'github-actions nova-commerce deploy' -f ~/.ssh/nova_deploy
 ```
 
+Allow it on the server. `restrict` blocks forwarding and terminals:
+
 ```bash
 { printf 'restrict '; cat ~/.ssh/nova_deploy.pub; } | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys'
 ```
+
+Store the private key in GitHub:
 
 ```bash
 gh secret set ALWAYSDATA_SSH_KEY < ~/.ssh/nova_deploy
 ```
 
+Store the server's host key:
+
 ```bash
 ssh-keyscan ssh-ACCOUNT.alwaysdata.net 2>/dev/null | gh secret set ALWAYSDATA_KNOWN_HOSTS
 ```
+
+Set the account name:
 
 ```bash
 gh variable set ALWAYSDATA_ACCOUNT -b ACCOUNT
 ```
 
+Set the folder the site lives in:
+
 ```bash
 gh variable set ALWAYSDATA_DOCROOT -b www/nova
 ```
+
+Set the site URL:
 
 ```bash
 gh variable set SITE_URL -b https://ACCOUNT.alwaysdata.net/nova
 ```
 
-`restrict` stops the key from opening port, agent or X11 forwarding or a terminal; it can still run the deploy commands. To revoke CI access, delete its line (ending in `github-actions nova-commerce deploy`) from `~/.ssh/authorized_keys` on the server.
+To revoke CI access, delete the line ending in `github-actions nova-commerce deploy` from `~/.ssh/authorized_keys` on the server.
 
-Settings stored in the database (such as payment texts) are only written by the seeder on the first install, so a deploy does not change them. Update those with WP-CLI over SSH, or redeploy with `RESEED=1`.
+</details>
+
+<details>
+<summary><strong>First install / manual deploy</strong></summary>
+
+**In the alwaysdata panel**
+
+1. *Databases → MySQL*: create `<account>_nova` and give the `<account>` user all rights on it.
+2. *Web → Sites*:
+   - **Empty account:** use the default site (`www/`, PHP 8.4).
+   - **Account that already hosts a site:** install into a sub-folder, with `DOCROOT=www/nova SITE_URL=https://<account>.alwaysdata.net/nova`. The free plan allows one account and only the `<account>.alwaysdata.net` address. The installer's `.htaccess` keeps `/nova/` separate from the parent site.
+   - **Paid plan:** a separate site with its own domain also works.
+3. *Remote access → SSH*: enable it, and add your key.
+
+**Password files on the server** (mode 600, never in the repo). Start each line with a space, so most shells keep it out of history.
+
+The database password:
+
+```bash
+printf '%s' 'YOUR_DB_PASSWORD' | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 077; cat > ~/.dbpass'
+```
+
+The admin password, needed only for the first install:
+
+```bash
+printf '%s' 'YOUR_ADMIN_PASSWORD' | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 077; cat > ~/.adminpass'
+```
+
+**Deploy from your machine**
+
+```bash
+ALWAYSDATA_ACCOUNT=ACCOUNT ADMIN_EMAIL=you@example.com DOCROOT=www/nova SITE_URL=https://ACCOUNT.alwaysdata.net/nova ./deploy/alwaysdata-push.sh
+```
+
+Optional variables: `DB_NAME`, `ADMIN_USER`, and `RESEED=1`, which resets the catalog, prices and stock to the sample data.
+
+**What the installer handles**
+- **HTTPS behind the hosting proxy:** it trusts the `X-Forwarded-Proto` header, and redirects HTTP to HTTPS.
+- **Its own `.htaccess`,** so pretty URLs work, including inside a sub-folder.
+- **Customer e-mails switched off** on the preview. The admin new-order e-mail and password resets stay on.
+- **Hardening:** `WP_DEBUG` off, `DISALLOW_FILE_EDIT` on, and `wp-config.php` at mode 600.
+- **Store options:** registration options and the `/login/` and `/register/` pages are applied on every deploy. Other settings stored in the database, such as payment texts, are written only on the first install. Change those in wp-admin, or with WP-CLI over SSH.
+- **Safety check:** it refuses to install over a different site or database.
+- **Memory:** it stays within the free plan's 256 MB.
+
+</details>
+
+---
+
+## Security
+
+| Area | What the code does |
+|---|---|
+| Secrets | `.env` is git-ignored, and `.env.example` has placeholders only. Server passwords live in mode-600 files, and CI keys are in GitHub secrets. |
+| Core integrity | WordPress and WooCommerce are installed by WP-CLI and never modified. |
+| Output | Everything is escaped (`esc_html`, `esc_attr`, `esc_url`). Icons are static SVG defined in code. |
+| Input | Settings use the Settings API with a sanitize callback and clamped values. API arguments are validated by the route schema. Names are sanitized and length-checked. |
+| Permissions | Settings require `manage_woocommerce`. Admin actions use nonces and capability checks. |
+| Accounts | WooCommerce's own login and registration handlers: nonces, unique e-mail, password hashing. |
+| Database | Only WordPress and WooCommerce APIs; no raw SQL. |
+| Orders | HPOS-safe order meta. Nothing touches totals, payment or stock. |
+| API | GET only, fixed field list, bounded parameters, no customer or order data. |
+| Payments | Cash on Delivery only; no card data is handled. |
+
+This project follows WordPress security practices but **has not had a professional security audit**. See [Before going live](#before-going-live).
+
+---
+
+## Quality and testing
+
+Install the code-check tools:
+
+```bash
+composer install
+```
+
+Check PHP syntax:
+
+```bash
+composer lint
+```
+
+Check WordPress Coding Standards:
+
+```bash
+vendor/bin/phpcs
+```
+
+- **Automatic checks:** both pass with **0 errors and 0 warnings**, and CI runs them on every push and pull request.
+- **No automated test suite:** behaviour is verified with the checklist below, in the browser and with `curl` and WP-CLI.
+
+<details>
+<summary><strong>Manual test checklist</strong></summary>
+
+**Catalog**
+- [ ] Home shows the hero, values strip, 5 category tiles, *Featured gear*, the promo band and *On sale now*.
+- [ ] `/shop/` paginates (8 per page), and filters, searches and sorts.
+- [ ] A product page shows the gallery zoom and lightbox, price, stock label, trust block and tabs.
+- [ ] *Reference Wired Headphones* shows "Sold out — restocking soon" and has no add-to-cart button.
+- [ ] *Dock Pro* shows "Only 2 left in stock" in amber.
+
+**Cart**
+- [ ] Add to cart updates the header count without a reload.
+- [ ] Quantity changes and removals recalculate the totals.
+- [ ] Below $99 the $9.95 rate applies; at $99 or more shipping is free.
+
+**Checkout and orders**
+- [ ] Only Cash on Delivery is offered.
+- [ ] The phone `12-34` is rejected on the server.
+- [ ] A valid order shows "Estimated dispatch: …". In the admin, the order shows the dispatch date, and the stock went down.
+
+**Accounts**
+- [ ] Logged out, the header icon and `/my-account/` lead to `/login/`. *Lost your password?* still works.
+- [ ] `/login/` and `/register/` each show one form and link to each other.
+- [ ] A wrong password shows its error on `/login/`; the right one opens the dashboard.
+- [ ] A missing name, or an e-mail that is already used, shows its error on `/register/`.
+- [ ] A valid sign-up logs in and greets the customer by name.
+- [ ] Logged in, `/login/` and `/register/` redirect to My Account.
+- [ ] *Create an account?* at checkout creates the customer with the order.
+
+**Languages**
+- [ ] *العربية* switches the same page to Arabic, right-to-left, and the choice is remembered.
+- [ ] Products, categories, cart, checkout, payment texts, account pages and errors are in Arabic.
+- [ ] wp-admin stays in English.
+- [ ] The API with `lang=ar` returns Arabic names; `lang=fr` returns 400.
+
+**API**
+- [ ] The default request returns 200.
+- [ ] `per_page=999`, `per_page=abc` and `category=nope` each return 400.
+- [ ] A `POST` returns 404.
+
+**Responsive**
+- [ ] At 375 px the menu opens full-screen, `Esc` closes it, and no page scrolls sideways, in English or Arabic.
+
+</details>
+
+---
+
+## Before going live
+
+The store is ready for review on the preview URL. Before it takes real customers:
+
+**Business details**
+- [ ] Replace the footer contact e-mail (`hello@example.test` in `footer.php`) and opening hours.
+- [ ] Set the real admin and store e-mail (**Settings → General**, **WooCommerce → Settings → Emails**).
+- [ ] Publish a Privacy Policy page (**Settings → Privacy**); the sign-up and checkout privacy notes link to it.
+- [ ] Replace the sample catalog with real products and photos.
+
+**Store setup**
+- [ ] Set up a real mail service (SMTP), then turn customer e-mails back on.
+- [ ] Add online payment if needed (for example Stripe or PayPal) in **WooCommerce → Settings → Payments**.
+
+**Hosting and security**
+- [ ] Add a CAPTCHA and rate limiting to login and sign-up; open registration attracts bot accounts.
+- [ ] Move to a paid plan with its own domain, backups and more memory.
+- [ ] Arrange a security review of the hosting and the custom code.
+
+**Known limitations**
+- There is no automated test suite yet; checks are manual.
+- Languages use `?lang=` plus a cookie, not `/ar/` URLs. Search engines find the Arabic pages through `hreflang` links. For SEO-heavy needs, a multilingual plugin (Polylang or WPML) is the next step.
+- Order items keep the product name in the language the customer ordered in.
+- The sample catalog has simple products only. The code supports variable products, such as colour or size options, but none are included.
+- The Arabic "Additional information" table can only be set by the seeder; there is no admin field for it yet.
+- HPOS compatibility is declared, but the store was tested on WooCommerce's classic order storage.
+- Fonts load from Google Fonts. Self-host them if strict GDPR compliance is required.
+
+---
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| `port is already allocated` | Change `WP_PORT` and `WP_URL` in `.env`, then run `docker compose up -d` again. |
-| Store shows "Coming soon" to logged-out visitors | `docker compose run --rm wpcli option update woocommerce_coming_soon no` |
-| `/wp-json/...` or product URLs return 404 | `docker compose run --rm wpcli rewrite structure '/%postname%/' --hard` |
-| Header cart count does not update | Hard-refresh the page. The theme enqueues `wc-cart-fragments`, so check the browser console for JS errors. |
-| `Error establishing a database connection` on first boot | MariaDB is still initialising. Wait about 10 s; `docker compose ps` should show `db` as *healthy*. |
-| Re-running the seeder reset my stock or prices | That is intentional: the seeder restores the canonical demo catalog. |
-| WooCommerce e-mails are not delivered | The stack has no mail server. Order e-mails fail silently and orders are still created. Add Mailpit/SMTP if you need them. |
-| `Warning: Regenerating a .htaccess file requires special configuration` during setup | Harmless. The WordPress image already ships the standard rewrite rules. |
-| Arabic page still shows English text | Check the field is filled in the *Arabic translation* box (empty fields fall back to English). For interface strings, run `./bin/i18n.sh` and check the "untranslated" count it prints. |
-| Language keeps switching back | The choice is stored in the `nova_lang` cookie. Use the switcher or `?lang=en` / `?lang=ar`; clearing cookies resets to English. |
-| Want to start over | `docker compose down -v && ./bin/setup.sh`. **This deletes the database and uploads.** |
+| `port is already allocated` | Change `WP_PORT` and `WP_URL` in `.env`, then `docker compose up -d` |
+| "Coming soon" page for visitors | `docker compose run --rm wpcli option update woocommerce_coming_soon no` |
+| Product URLs or `/wp-json/` return 404 | `docker compose run --rm wpcli rewrite structure '/%postname%/' --hard` |
+| `/login/` or `/register/` return 404 | `docker compose run --rm wpcli eval-file /seed/account-pages.php` |
+| Header cart count does not update | Hard-refresh; check the browser console for JavaScript errors |
+| `Error establishing a database connection` on first start | MariaDB is still starting; wait about 10 seconds |
+| E-mails are not delivered locally | The local stack has no mail server; orders are still created |
+| Arabic page shows English text | Fill the *Arabic translation* field, or run `./bin/i18n.sh` for interface text |
+| Language keeps switching back | It is stored in the `nova_lang` cookie; use the switcher or `?lang=` |
+| Deploy fails with "Killed" | The free plan ran out of memory; make sure only one deploy runs at a time |
 
-## Interview walkthrough
+---
 
-This is roughly a 5-minute tour.
+## Credits
 
-1. **Setup (30 s).**
-   - Docker Compose runs MariaDB, WordPress 7.1.3 on PHP 8.3, and a WP-CLI container.
-   - `bin/setup.sh` is idempotent: it installs the *pinned* WooCommerce release, activates my theme and plugin, and seeds the data.
-   - Core and WooCommerce sit in a volume. Only my code is mounted, so I *can't* accidentally edit core.
+Product, hero and promo photos are from [Unsplash](https://unsplash.com), used under the [Unsplash License](https://unsplash.com/license). Product names and specifications are fictional sample data.
 
-2. **Theme vs plugin (1 min).**
-   - The theme is presentation only: templates, CSS/JS, and layout moved around with WooCommerce hooks rather than copied template overrides.
-   - The plugin holds the rules. Swap the theme and the delivery promise, stock labels, discount badges, checkout validation and API all keep working.
-   - They talk through one custom filter (`nova_store_free_shipping_threshold`), so neither hard-depends on the other.
+<details>
+<summary>Photo list</summary>
 
-3. **Hooks (1.5 min).** Open a product page.
-   - The trust block comes from the `woocommerce_single_product_summary` action at priority 35. I chose 35 because add-to-cart is 30 and the meta block is 40.
-   - "Only 2 left" comes from the `woocommerce_get_availability_text` filter, which returns a modified string, plus a class filter for styling.
-   - "−12%" comes from `woocommerce_sale_flash`.
-   - The free-shipping amount is read from the shipping zone itself, so the label can't disagree with checkout.
-
-4. **Checkout (1 min).**
-   - Enter the phone `12-34`. `woocommerce_after_checkout_validation` adds to the `WP_Error`, which blocks the order server side.
-   - Fix it and place the COD order. `woocommerce_checkout_create_order` writes HPOS-safe order meta. The dispatch date then shows on the thank-you page and in the admin order screen.
-   - I used classic shortcode checkout on purpose. Block checkout goes through the Store API and skips these hooks; I can name the Store API equivalent.
-
-5. **REST API (45 s).**
-   - `curl` the endpoint. It is built from `wc_get_products()` with a field allow-list.
-   - Args are validated by the schema (`per_page` 1–12, category must exist), so bad input gets a 400.
-   - The public `permission_callback` is deliberate and documented. The route caches in transients with a versioned key, so there is no wildcard delete or SQL.
-
-6. **Security (45 s).**
-   - Escaping is done on output.
-   - The settings page uses the Settings API, with a `manage_woocommerce` capability, a sanitize callback, and clamping.
-   - The cache-flush button has an explicit nonce plus a capability check. I tested that a bad nonce gets a 403.
-   - There is no raw SQL, no secrets in git, the DB is not exposed, and payment is COD only.
-   - It is **not** production-audited, and I can list what's missing (see above).
-
-7. **Languages (45 s).** Click *العربية* in the header.
-   - One `locale` filter, registered before WordPress loads translations, switches core, WooCommerce, theme and plugin. The page turns RTL by itself.
-   - Interface strings come from `.po`/`.mo` files; catalog content comes from meta with English fallback; the CSS uses logical properties, so there is no separate RTL stylesheet.
-   - Show the *Arabic translation* box on a product, and `?lang=ar` on the API.
-
-8. **Admin (30 s).** Show that the store is run natively:
-   - Products → edit a price or stock quantity, then show the storefront and API update (the cache is invalidated by hook).
-   - WooCommerce → Orders.
-   - WooCommerce → NOVA Store settings.
-
-## Known limitations
-
-- No automated test suite (PHPUnit/Playwright). Verification is the manual checklist above.
-- No mail server, so customer and admin e-mails are not delivered.
-- Products are simple products. Variable products (colour/size) are supported by the code (for example the sale badge handles them), but none are seeded.
-- No product reviews or ratings are seeded.
-- Fonts load from Google Fonts. Self-host them for GDPR-strict deployments.
-- Languages use `?lang` plus a cookie, not separate URLs such as `/ar/`. Search engines only see the Arabic version through the `hreflang` links with `?lang=ar`. A plugin such as Polylang or WPML would be the next step for SEO-heavy sites.
-- Order line items keep the product name in the language the customer ordered in. Staff see that name in the admin.
-- The Arabic "Additional information" table is filled by the seeder only; there is no admin field for it yet.
-- Admin-only plugin strings (settings page, meta boxes) are not translated, because the admin stays English.
-- WooCommerce e-mails would use the language of the request that sends them, but no mail server is configured, so this is untested.
-- HPOS compatibility is declared and the code only uses CRUD APIs. This install runs on legacy post storage (HPOS was off after a WP-CLI install), and HPOS mode was not separately exercised.
-
-## Image credits
-
-Product, hero and promo photos are from [Unsplash](https://unsplash.com) and used under the [Unsplash License](https://unsplash.com/license) (free for commercial use; attribution appreciated). The photo ID is `https://unsplash.com/photos/<id>` / `images.unsplash.com/photo-<id>`. Product names and specs are fictional.
-
-| File | Unsplash photo |
+| File | Unsplash photo ID |
 |---|---|
 | aura-anc-headphones.jpg | `1546435770-a3e426bf472b` |
 | studio-pro-headphones.jpg | `1505740420928-5e560c06d30e` |
@@ -689,3 +630,7 @@ Product, hero and promo photos are from [Unsplash](https://unsplash.com) and use
 | wireless-charging-pad.jpg | `1615526675159-e248c3021d3f` |
 | theme `hero.jpg` | `1593062096033-9a26b09da705` |
 | theme `promo.jpg` | `1616763355548-1b606f439f86` |
+
+Photo URL: `https://unsplash.com/photos/<id>`.
+
+</details>
