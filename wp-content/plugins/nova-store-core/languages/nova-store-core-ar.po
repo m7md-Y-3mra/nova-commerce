@@ -53,6 +53,10 @@ msgstr "<strong>%s</strong> مطلوب."
 msgid "<strong>%1$s</strong> must be %2$d characters or fewer."
 msgstr "يجب ألا يزيد <strong>%1$s</strong> عن %2$d حرفًا."
 
+#: includes/class-account-pages.php:87
+msgid "Registration is closed."
+msgstr "التسجيل مغلق حاليًا."
+
 #: includes/class-checkout-hooks.php:60
 msgid "<strong>Billing phone</strong> must contain between 7 and 15 digits."
 msgstr "<strong>رقم هاتف الفوترة</strong> يجب أن يحتوي على 7 إلى 15 رقمًا."
@@ -284,9 +288,25 @@ msgstr ""
 msgid "Arabic description"
 msgstr ""
 
-#: nova-store-core.php:73
+#: nova-store-core.php:74
 msgid "NOVA Store Core requires WooCommerce to be installed and active."
 msgstr ""
+
+#: templates/login-form.php:60
+msgid "New to NOVA?"
+msgstr "جديد في نوفا؟"
+
+#: templates/login-form.php:61
+msgid "Create an account"
+msgstr "أنشئ حسابًا"
+
+#: templates/register-form.php:64
+msgid "Already have an account?"
+msgstr "لديك حساب بالفعل؟"
+
+#: templates/register-form.php:65
+msgid "Log in"
+msgstr "تسجيل الدخول"
 
 #: templates/trust-block.php:21
 msgid "Delivery and guarantees"
