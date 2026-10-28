@@ -143,6 +143,7 @@ To reset everything, run `docker compose down -v` and then `./bin/setup.sh`. **`
         │   ├── class-delivery.php          # free-shipping threshold + dispatch-date rules
         │   ├── class-product-hooks.php     # product page / label hooks
         │   ├── class-checkout-hooks.php    # checkout validation + order meta
+        │   ├── class-account-hooks.php     # register form: first/last name
         │   └── class-rest-featured-products.php
         ├── languages/                  # nova-store-core.pot, nova-store-core-ar.po/.mo
         ├── templates/trust-block.php
@@ -198,6 +199,9 @@ All of these are in `wp-content/plugins/nova-store-core/includes/`. Every hook w
 | 10 | `locale` | filter (core) | Every storefront request, registered before WordPress loads translations | Returns `ar` or `en_US` for the visitor's language, so core, WooCommerce, the theme and the plugin all load matching translations and WordPress turns on RTL. Admin screens are skipped. |
 | 11 | `nova_store_languages` | custom filter | Theme header and mobile menu | Gives the theme the switcher data (name, URL, current) without calling plugin code. |
 | 12 | `woocommerce_cart_fragment_name` | filter | Cart fragments (AJAX header cart) | Adds the language to the fragment cache key, so the header never shows the other language's cart text. |
+| 13 | `woocommerce_register_form_start` | action | My Account → Register, above the e-mail field | Adds required **First name** / **Last name** fields, refilled after a failed submit. |
+| 14 | `woocommerce_register_post` | action, `($username, $email, $errors)` | Server side, before the customer is created | Requires both names (max 60 characters). Checkout's "Create an account?" fires the same hook, so it only acts on the My Account form (checkout has billing names). |
+| 15 | `woocommerce_created_customer` | action | Right after the customer is inserted | Saves the names on the user and as the default billing name through `WC_Customer`, so the dashboard says "Hello Sara Ali". |
 
 The content filters used for Arabic (`the_title`, `the_content`, `woocommerce_product_get_name`, `get_product_cat`, …) are listed under [Languages](#languages-english--العربية).
 
@@ -362,6 +366,7 @@ To add another language: add it to `Languages::available()`, install its languag
 | Orders | Meta is written via `WC_Order::update_meta_data()`, and HPOS compatibility is declared. Nothing touches totals, payment or stock. |
 | Public API | GET only, allow-listed fields, bounded `per_page`, `lang` limited to an enum, no customer/order/config data. |
 | Language switch | `?lang` and the `nova_lang` cookie are checked against the list of supported languages (`sanitize_key` + allow-list), so nothing else reaches the `locale` filter. It is a display preference with no side effects, so it has no nonce (like a currency switcher). The cookie is HttpOnly and SameSite=Lax. Switcher links use `home_url()`, not the `Host` header. |
+| Customer registration | WooCommerce's own form handler: nonce, unique e-mail, password hashing and login. Shoppers choose their password (a generated one would be sent by the customer e-mail the deploy turns off). Names pass through `sanitize_text_field` and are length-checked. There is **no CAPTCHA or rate limit**, so a public site will get bot sign-ups; add one before taking real customers. |
 | Arabic content fields | Saved only with a valid nonce and `current_user_can( 'edit_post' / 'edit_term' )`. Titles go through `sanitize_text_field`, content through `wp_kses_post`; output is escaped again. Tested: a bad nonce left the data unchanged, and `<script>` was stripped on save. |
 | Payments | COD only. No card fields and no gateway credentials. |
 | Dependencies | WordPress 7.1.3, WooCommerce 11.2.1 (latest at build time), PHP 8.3, MariaDB 11.8. No other plugins are installed. |
@@ -421,6 +426,13 @@ These are the checks run for this build. Re-run them after any change.
 - [ ] A phone of `12-34` blocks the order with "Billing phone must contain between 7 and 15 digits." (server side).
 - [ ] A valid phone takes you to *Order received*, which shows "Estimated dispatch: …".
 - [ ] In the admin, **WooCommerce → Orders** shows the order as *Processing*, with "Estimated dispatch (NOVA)" and "Channel: web-storefront" under the shipping address. The product's stock went down.
+
+**Accounts**
+- [ ] *My account* shows Login and Register side by side (stacked on mobile).
+- [ ] Registering without a first name shows "First name is required."; a used e-mail shows "An account is already registered…".
+- [ ] A valid sign-up logs you in and the dashboard says "Hello *First Last*". Log out and log back in with the same e-mail and password.
+- [ ] Ticking *Create an account?* at checkout asks for a password and creates the customer with the order.
+- [ ] In Arabic, the name labels, errors and privacy note are Arabic.
 
 **API**
 - [ ] `featured-products` returns 200 with `count` / `products`.
