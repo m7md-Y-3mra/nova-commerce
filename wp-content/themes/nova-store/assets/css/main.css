@@ -1679,6 +1679,39 @@ textarea:focus,
 	padding: 1.5rem;
 }
 
+/* Login + register: names side by side, quieter privacy note */
+.woocommerce form.register .nova-register-names {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0 1rem;
+}
+
+.woocommerce form.register .nova-register-names .form-row {
+	width: auto;
+	float: none;
+}
+
+.woocommerce form.register .woocommerce-privacy-policy-text p {
+	margin: 0.25rem 0 1rem;
+	font-size: 0.82rem;
+	color: var(--muted);
+}
+
+.woocommerce form.login .woocommerce-form-login__rememberme {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-height: 46px;
+	margin-inline-start: 0.75rem;
+	vertical-align: middle;
+}
+
+@media (max-width: 480px) {
+	.woocommerce form.register .nova-register-names {
+		grid-template-columns: 1fr;
+	}
+}
+
 /* ---------- Generic pages ---------- */
 
 .page-header {
