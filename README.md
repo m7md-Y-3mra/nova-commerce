@@ -113,6 +113,7 @@ To reset everything, run `docker compose down -v` and then `./bin/setup.sh`. **`
 │   ├── setup.sh                # idempotent bootstrap (WP-CLI)
 │   ├── i18n.sh                 # rebuild .pot → Arabic .po → .mo for theme + plugin
 │   └── po-fill.py              # merges Arabic strings into a .po (used by i18n.sh)
+├── .github/workflows/ci-cd.yml  # lint on every push/PR; deploy + smoke test on main
 ├── deploy/
 │   ├── alwaysdata-push.sh      # local: upload code over SSH, run the installer
 │   └── alwaysdata-install.sh   # server: WordPress + WooCommerce + theme/plugin + seed (re-runnable)
@@ -521,6 +522,49 @@ Optional variables: `SITE_URL` (the site's address), `DOCROOT` (root directory u
 - **Disk.** The install uses about 200 MB of the 1 GB.
 
 This is a demo deployment, not a security-reviewed production setup.
+
+### Continuous deployment (GitHub Actions)
+
+`.github/workflows/ci-cd.yml` runs on every push and pull request:
+
+1. **lint**: `composer lint` (PHP syntax), PHPCS (WordPress Coding Standards), and `bash -n` on the shell scripts.
+2. **deploy** (pushes to `main` only, after lint passes): runs `deploy/alwaysdata-push.sh` over SSH, then a smoke test checks the home page, Arabic RTL, shop, a product page and the REST endpoint on the live URL. Only one deploy runs at a time, because the free plan has 256 MB RAM for the whole account.
+
+It can also be started by hand from the *Actions* tab (*Run workflow*).
+
+**One-time setup.** Create an SSH key used only by CI, allow it on the server, and store it in GitHub:
+
+```bash
+ssh-keygen -t ed25519 -N '' -C 'github-actions nova-commerce deploy' -f ~/.ssh/nova_deploy
+```
+
+```bash
+{ printf 'restrict '; cat ~/.ssh/nova_deploy.pub; } | ssh ACCOUNT@ssh-ACCOUNT.alwaysdata.net 'umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys'
+```
+
+```bash
+gh secret set ALWAYSDATA_SSH_KEY < ~/.ssh/nova_deploy
+```
+
+```bash
+ssh-keyscan ssh-ACCOUNT.alwaysdata.net 2>/dev/null | gh secret set ALWAYSDATA_KNOWN_HOSTS
+```
+
+```bash
+gh variable set ALWAYSDATA_ACCOUNT -b ACCOUNT
+```
+
+```bash
+gh variable set ALWAYSDATA_DOCROOT -b www/nova
+```
+
+```bash
+gh variable set SITE_URL -b https://ACCOUNT.alwaysdata.net/nova
+```
+
+`restrict` stops the key from opening port, agent or X11 forwarding or a terminal; it can still run the deploy commands. To revoke CI access, delete its line (ending in `github-actions nova-commerce deploy`) from `~/.ssh/authorized_keys` on the server.
+
+Settings stored in the database (such as payment texts) are only written by the seeder on the first install, so a deploy does not change them. Update those with WP-CLI over SSH, or redeploy with `RESEED=1`.
 
 ## Troubleshooting
 
