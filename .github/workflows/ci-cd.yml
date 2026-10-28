@@ -83,7 +83,8 @@ jobs:
           check "$SITE_URL/?lang=ar" 'dir="rtl"'
           check "$SITE_URL/shop/" 'class="products'
           check "$SITE_URL/product/aura-anc-wireless-headphones/" 'class="product-top"'
-          check "$SITE_URL/my-account/" 'woocommerce-form-register'
+          check "$SITE_URL/login/" 'woocommerce-form-login'
+          check "$SITE_URL/register/" 'woocommerce-form-register'
           check "$SITE_URL/wp-json/nova-store/v1/featured-products?lang=ar" '"products"'
           if curl -fsSL "$SITE_URL/" | grep -qiE '\(demo\)|demo store'; then echo "FAIL: demo wording on home"; exit 1; fi
 
