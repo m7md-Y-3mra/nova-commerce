@@ -139,7 +139,10 @@ fi
 echo "==> Site options"
 wp option update blogdescription "Premium tech accessories for focused work" >/dev/null
 wp option update timezone_string "UTC" >/dev/null
-wp rewrite structure '/%postname%/' >/dev/null
+# Not `wp rewrite structure`: it starts a second WP-CLI process to flush, and two
+# processes with WooCommerce loaded exceed the free plan's 256 MB (the deploy gets
+# "Killed"). The rules are flushed once at the end instead.
+wp option update permalink_structure '/%postname%/' >/dev/null
 
 echo "==> Fallback theme (not activated; keeps /wp-admin reachable if nova-store fatals)"
 wp theme is-installed twentytwentyfive >/dev/null 2>&1 || wp theme install twentytwentyfive >/dev/null
