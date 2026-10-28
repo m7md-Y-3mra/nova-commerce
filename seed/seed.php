@@ -62,6 +62,12 @@ foreach ( $nova_options as $nova_key => $nova_value ) {
 	update_option( $nova_key, $nova_value );
 }
 update_option( 'woocommerce_onboarding_profile', array( 'skipped' => true ) );
+// Shoppers can register on My Account and at checkout. They choose their own
+// password: a generated one is e-mailed, and customer e-mails are off.
+update_option( 'woocommerce_enable_myaccount_registration', 'yes' );
+update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'yes' );
+update_option( 'woocommerce_registration_generate_username', 'yes' );
+update_option( 'woocommerce_registration_generate_password', 'no' );
 WP_CLI::log( 'Store settings updated.' );
 
 // ----------------------------------------------------------------------
