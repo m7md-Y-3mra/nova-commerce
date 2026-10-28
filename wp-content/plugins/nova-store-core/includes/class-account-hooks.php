@@ -1,6 +1,6 @@
 <?php
 /**
- * Customer registration hooks (My Account → Register form).
+ * Customer registration hooks (the /register/ page form).
  *
  * | Hook                             | Type   | Runs                                                 |
  * |----------------------------------|--------|------------------------------------------------------|
@@ -14,7 +14,7 @@
  *
  * Checkout also calls woocommerce_register_post when "Create an account?" is
  * ticked; there the billing name fields already exist, so these hooks only act
- * on the My Account form.
+ * on the register form (/register/, or My Account if that page is missing).
  *
  * @package NovaStoreCore
  */
@@ -63,7 +63,7 @@ class Account_Hooks {
 	}
 
 	/**
-	 * Require both names on the My Account form.
+	 * Require both names on the register form.
 	 *
 	 * @param string    $username Username (empty when generated from the e-mail).
 	 * @param string    $email    E-mail address.
@@ -114,7 +114,7 @@ class Account_Hooks {
 	}
 
 	/**
-	 * Whether this request is the My Account register form (not checkout).
+	 * Whether this request is the register form (not checkout).
 	 *
 	 * WC_Form_Handler::process_registration() verifies this nonce before it
 	 * fires any of the hooks above.
