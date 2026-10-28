@@ -73,7 +73,7 @@ update_option(
 	array(
 		'enabled'            => 'yes',
 		'title'              => 'Cash on delivery',
-		'description'        => 'Pay in cash when your order arrives. This is a demo store: no real payment is taken.',
+		'description'        => 'Pay in cash when your order arrives.',
 		'instructions'       => 'Please have the exact amount ready for the courier.',
 		'enable_for_methods' => array(),
 		'enable_for_virtual' => 'yes',

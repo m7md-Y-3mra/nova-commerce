@@ -56,8 +56,8 @@ msgid "Cash on delivery"
 msgstr "الدفع عند الاستلام"
 
 #: includes/class-content-translation.php:272
-msgid "Pay in cash when your order arrives. This is a demo store: no real payment is taken."
-msgstr "ادفع نقدًا عند وصول طلبك. هذا متجر تجريبي: لا يتم تحصيل أي مبلغ حقيقي."
+msgid "Pay in cash when your order arrives."
+msgstr "ادفع نقدًا عند وصول طلبك."
 
 #: includes/class-content-translation.php:273
 msgid "Please have the exact amount ready for the courier."

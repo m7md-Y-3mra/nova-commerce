@@ -14,8 +14,9 @@ msgstr ""
 #. Theme Name of the theme
 #. Author of the theme
 #: style.css
+#: footer.php:46
 msgid "NOVA Store"
-msgstr ""
+msgstr "متجر نوفا"
 
 #. Theme URI of the theme
 #: style.css
@@ -59,17 +60,13 @@ msgstr "المساعدة"
 msgid "Contact"
 msgstr "تواصل معنا"
 
-#: footer.php:46
-msgid "NOVA Store (demo)"
-msgstr "متجر نوفا (تجريبي)"
-
 #: footer.php:47
 msgid "Mon–Fri, 9:00–17:00 UTC"
 msgstr "الاثنين–الجمعة، 9:00–17:00 بتوقيت UTC"
 
 #: footer.php:54
-msgid "Demo store — no real payments are processed."
-msgstr "متجر تجريبي — لا تتم معالجة أي مدفوعات حقيقية."
+msgid "All rights reserved."
+msgstr "جميع الحقوق محفوظة."
 
 #: footer.php:55
 msgid "Secure checkout · Cash on delivery"
@@ -141,19 +138,19 @@ msgstr "تسوّق الكل"
 msgid "Language"
 msgstr "اللغة"
 
-#: inc/woocommerce.php:45
+#: inc/woocommerce.php:65
 msgid "Breadcrumb"
 msgstr "مسار التنقل"
 
-#: inc/woocommerce.php:77
+#: inc/woocommerce.php:97
 msgid "Product categories"
 msgstr "فئات المنتجات"
 
-#: inc/woocommerce.php:78
+#: inc/woocommerce.php:98
 msgid "All"
 msgstr "الكل"
 
-#: inc/woocommerce.php:146
+#: inc/woocommerce.php:166
 msgid "Popular right now"
 msgstr "الأكثر رواجًا الآن"
 
@@ -266,8 +263,8 @@ msgid "Secure checkout"
 msgstr "دفع آمن"
 
 #: template-parts/home/values.php:33
-msgid "Pay on delivery in this demo"
-msgstr "ادفع عند الاستلام في هذا المتجر التجريبي"
+msgid "Pay in cash when your order arrives"
+msgstr "ادفع نقدًا عند استلام طلبك"
 
 #: template-parts/home/values.php:37
 msgid "Why shop with NOVA"

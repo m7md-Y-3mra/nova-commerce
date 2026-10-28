@@ -43,7 +43,7 @@ defined( 'ABSPATH' ) || exit;
 		<div class="footer-col">
 			<h2 class="footer-title"><?php esc_html_e( 'Contact', 'nova-store' ); ?></h2>
 			<address>
-				<?php esc_html_e( 'NOVA Store (demo)', 'nova-store' ); ?><br>
+				<?php esc_html_e( 'NOVA Store', 'nova-store' ); ?><br>
 				<?php esc_html_e( 'Mon–Fri, 9:00–17:00 UTC', 'nova-store' ); ?><br>
 				<a href="mailto:hello@example.test">hello@example.test</a>
 			</address>
@@ -51,7 +51,7 @@ defined( 'ABSPATH' ) || exit;
 	</div>
 
 	<div class="container footer-bottom">
-		<p>&copy; <?php echo esc_html( wp_date( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?>. <?php esc_html_e( 'Demo store — no real payments are processed.', 'nova-store' ); ?></p>
+		<p>&copy; <?php echo esc_html( wp_date( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?>. <?php esc_html_e( 'All rights reserved.', 'nova-store' ); ?></p>
 		<p class="footer-payments"><?php echo nova_store_icon( 'lock', 16 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> <?php esc_html_e( 'Secure checkout · Cash on delivery', 'nova-store' ); ?></p>
 	</div>
 </footer>

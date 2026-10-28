@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-27T13:27:08+00:00\n"
+"POT-Creation-Date: 2026-10-28T06:36:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: nova-store\n"
@@ -17,6 +17,7 @@ msgstr ""
 #. Theme Name of the theme
 #. Author of the theme
 #: style.css
+#: footer.php:46
 msgid "NOVA Store"
 msgstr ""
 
@@ -62,16 +63,12 @@ msgstr ""
 msgid "Contact"
 msgstr ""
 
-#: footer.php:46
-msgid "NOVA Store (demo)"
-msgstr ""
-
 #: footer.php:47
 msgid "Mon–Fri, 9:00–17:00 UTC"
 msgstr ""
 
 #: footer.php:54
-msgid "Demo store — no real payments are processed."
+msgid "All rights reserved."
 msgstr ""
 
 #: footer.php:55
@@ -140,19 +137,19 @@ msgstr ""
 msgid "Language"
 msgstr ""
 
-#: inc/woocommerce.php:45
+#: inc/woocommerce.php:65
 msgid "Breadcrumb"
 msgstr ""
 
-#: inc/woocommerce.php:77
+#: inc/woocommerce.php:97
 msgid "Product categories"
 msgstr ""
 
-#: inc/woocommerce.php:78
+#: inc/woocommerce.php:98
 msgid "All"
 msgstr ""
 
-#: inc/woocommerce.php:146
+#: inc/woocommerce.php:166
 msgid "Popular right now"
 msgstr ""
 
@@ -261,7 +258,7 @@ msgid "Secure checkout"
 msgstr ""
 
 #: template-parts/home/values.php:33
-msgid "Pay on delivery in this demo"
+msgid "Pay in cash when your order arrives"
 msgstr ""
 
 #: template-parts/home/values.php:37

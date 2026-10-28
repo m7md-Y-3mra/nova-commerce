@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-27T13:27:10+00:00\n"
+"POT-Creation-Date: 2026-10-28T06:36:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: nova-store-core\n"
@@ -59,7 +59,7 @@ msgid "Cash on delivery"
 msgstr ""
 
 #: includes/class-content-translation.php:272
-msgid "Pay in cash when your order arrives. This is a demo store: no real payment is taken."
+msgid "Pay in cash when your order arrives."
 msgstr ""
 
 #: includes/class-content-translation.php:273

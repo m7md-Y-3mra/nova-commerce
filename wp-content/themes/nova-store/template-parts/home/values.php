@@ -30,7 +30,7 @@ $nova_values    = array(
 	array(
 		'icon'  => 'lock',
 		'title' => __( 'Secure checkout', 'nova-store' ),
-		'text'  => __( 'Pay on delivery in this demo', 'nova-store' ),
+		'text'  => __( 'Pay in cash when your order arrives', 'nova-store' ),
 	),
 );
 ?>

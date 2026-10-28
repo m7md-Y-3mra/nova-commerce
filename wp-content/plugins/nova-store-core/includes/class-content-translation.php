@@ -269,7 +269,7 @@ class Content_Translation {
 			'Free shipping'                             => __( 'Free shipping', 'nova-store-core' ),
 			'Standard shipping'                         => __( 'Standard shipping', 'nova-store-core' ),
 			'Cash on delivery'                          => __( 'Cash on delivery', 'nova-store-core' ),
-			'Pay in cash when your order arrives. This is a demo store: no real payment is taken.' => __( 'Pay in cash when your order arrives. This is a demo store: no real payment is taken.', 'nova-store-core' ),
+			'Pay in cash when your order arrives.'      => __( 'Pay in cash when your order arrives.', 'nova-store-core' ),
 			'Please have the exact amount ready for the courier.' => __( 'Please have the exact amount ready for the courier.', 'nova-store-core' ),
 			'Premium tech accessories for focused work' => __( 'Premium tech accessories for focused work', 'nova-store-core' ),
 		);
