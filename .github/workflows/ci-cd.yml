@@ -1,0 +1,91 @@
+# CI on every push and pull request; deploy to alwaysdata on pushes to main.
+#
+# Repository secrets:   ALWAYSDATA_SSH_KEY (private key of a deploy-only key pair)
+#                       ALWAYSDATA_KNOWN_HOSTS (host keys of ssh-<account>.alwaysdata.net)
+# Repository variables: ALWAYSDATA_ACCOUNT, ALWAYSDATA_DOCROOT, SITE_URL
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dev tooling
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: PHP syntax
+        run: composer lint
+
+      - name: WordPress Coding Standards
+        run: vendor/bin/phpcs -q
+
+      - name: Shell scripts parse
+        run: for f in bin/*.sh deploy/*.sh; do bash -n "$f"; done
+
+  deploy:
+    needs: lint
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    # One deploy at a time: the free plan has 256 MB RAM for the whole account.
+    concurrency:
+      group: deploy-alwaysdata
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH key
+        env:
+          SSH_KEY: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.ALWAYSDATA_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+
+      - name: Deploy
+        env:
+          ALWAYSDATA_ACCOUNT: ${{ vars.ALWAYSDATA_ACCOUNT }}
+          DOCROOT: ${{ vars.ALWAYSDATA_DOCROOT }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: ./deploy/alwaysdata-push.sh
+
+      - name: Smoke test
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          set -euo pipefail
+          check() { # url, expected text
+            body="$(curl -fsSL --retry 3 --retry-delay 5 "$1")"
+            grep -qF -- "$2" <<<"$body" || { echo "FAIL: '$2' not found at $1"; exit 1; }
+            echo "ok: $1"
+          }
+          check "$SITE_URL/" 'All rights reserved.'
+          check "$SITE_URL/?lang=ar" 'dir="rtl"'
+          check "$SITE_URL/shop/" 'class="products'
+          check "$SITE_URL/product/aura-anc-wireless-headphones/" 'class="product-top"'
+          check "$SITE_URL/wp-json/nova-store/v1/featured-products?lang=ar" '"products"'
+          if curl -fsSL "$SITE_URL/" | grep -qiE '\(demo\)|demo store'; then echo "FAIL: demo wording on home"; exit 1; fi
+
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
