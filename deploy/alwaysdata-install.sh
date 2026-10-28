@@ -182,6 +182,10 @@ else
 	echo "==> Catalog already seeded ($products products); RESEED=1 to reset it"
 fi
 
+echo "==> Account pages (/login/, /register/)"
+# Added after the live site was seeded; idempotent, so it runs on every deploy.
+wp eval-file "$SRC/seed/account-pages.php"
+
 echo "==> Public demo: no order e-mails to shoppers"
 # Shoppers type addresses that may belong to real people. The admin new-order
 # e-mail and password resets stay on.

@@ -845,4 +845,6 @@ foreach ( $nova_ar['pages'] as $nova_slug => list( $nova_ar_title, $nova_ar_cont
 }
 WP_CLI::log( 'Arabic page titles ready.' );
 
+require __DIR__ . '/account-pages.php';
+
 WP_CLI::success( 'NOVA Store demo data seeded.' );
