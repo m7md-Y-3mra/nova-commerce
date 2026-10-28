@@ -24,6 +24,7 @@
  * | woocommerce_shipping_rate_label            | filter | Seeded shipping method names       |
  * | option_woocommerce_cod_settings            | filter | COD title/description/instructions |
  * | option_blogdescription                     | filter | Site tagline (<title> on home)     |
+ * | woocommerce_get_privacy_policy_text        | filter | Privacy note, register + checkout  |
  *
  * @package NovaStoreCore
  */
@@ -65,6 +66,7 @@ class Content_Translation {
 		add_filter( 'woocommerce_shipping_rate_label', array( $this, 'translate_store_string' ), 20 );
 		add_filter( 'option_woocommerce_cod_settings', array( $this, 'filter_cod_settings' ) );
 		add_filter( 'option_blogdescription', array( $this, 'translate_store_string' ) );
+		add_filter( 'woocommerce_get_privacy_policy_text', array( $this, 'translate_store_string' ) );
 	}
 
 	/**
@@ -256,7 +258,8 @@ class Content_Translation {
 	}
 
 	/**
-	 * Translate store texts that are saved as settings (shipping names, COD copy, tagline).
+	 * Translate store texts that are saved as settings (shipping names, COD copy,
+	 * tagline, privacy notes).
 	 *
 	 * They are listed here as gettext strings so the Arabic lives in the plugin's
 	 * .po file with everything else. Unknown strings are returned unchanged.
@@ -272,6 +275,9 @@ class Content_Translation {
 			'Pay in cash when your order arrives.'      => __( 'Pay in cash when your order arrives.', 'nova-store-core' ),
 			'Please have the exact amount ready for the courier.' => __( 'Please have the exact amount ready for the courier.', 'nova-store-core' ),
 			'Premium tech accessories for focused work' => __( 'Premium tech accessories for focused work', 'nova-store-core' ),
+			// WooCommerce's default privacy notes; [privacy_policy] becomes the policy link.
+			'Your personal data will be used to support your experience throughout this website, to manage access to your account, and for other purposes described in our [privacy_policy].' => __( 'Your personal data will be used to support your experience throughout this website, to manage access to your account, and for other purposes described in our [privacy_policy].', 'nova-store-core' ),
+			'Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our [privacy_policy].' => __( 'Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our [privacy_policy].', 'nova-store-core' ),
 		);
 
 		return $strings[ $text ] ?? $text;

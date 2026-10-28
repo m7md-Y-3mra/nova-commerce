@@ -114,7 +114,7 @@ msgstr "القائمة"
 msgid "Primary"
 msgstr "الرئيسية"
 
-#: header.php:88
+#: header.php:89
 msgid "My account"
 msgstr "حسابي"
 

@@ -62,6 +62,12 @@ foreach ( $nova_options as $nova_key => $nova_value ) {
 	update_option( $nova_key, $nova_value );
 }
 update_option( 'woocommerce_onboarding_profile', array( 'skipped' => true ) );
+// Shoppers can register on My Account and at checkout. They choose their own
+// password: a generated one is e-mailed, and customer e-mails are off.
+update_option( 'woocommerce_enable_myaccount_registration', 'yes' );
+update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'yes' );
+update_option( 'woocommerce_registration_generate_username', 'yes' );
+update_option( 'woocommerce_registration_generate_password', 'no' );
 WP_CLI::log( 'Store settings updated.' );
 
 // ----------------------------------------------------------------------
@@ -838,5 +844,7 @@ foreach ( $nova_ar['pages'] as $nova_slug => list( $nova_ar_title, $nova_ar_cont
 	}
 }
 WP_CLI::log( 'Arabic page titles ready.' );
+
+require __DIR__ . '/account-pages.php';
 
 WP_CLI::success( 'NOVA Store demo data seeded.' );

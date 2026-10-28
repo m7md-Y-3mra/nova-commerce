@@ -143,6 +143,12 @@ wp option update timezone_string "UTC" >/dev/null
 # processes with WooCommerce loaded exceed the free plan's 256 MB (the deploy gets
 # "Killed"). The rules are flushed once at the end instead.
 wp option update permalink_structure '/%postname%/' >/dev/null
+# Customer registration (My Account + checkout). Shoppers pick their own password:
+# a generated one is sent by the customer_new_account e-mail, which is off below.
+wp option update woocommerce_enable_myaccount_registration yes >/dev/null
+wp option update woocommerce_enable_signup_and_login_from_checkout yes >/dev/null
+wp option update woocommerce_registration_generate_username yes >/dev/null
+wp option update woocommerce_registration_generate_password no >/dev/null
 
 echo "==> Fallback theme (not activated; keeps /wp-admin reachable if nova-store fatals)"
 wp theme is-installed twentytwentyfive >/dev/null 2>&1 || wp theme install twentytwentyfive >/dev/null
@@ -175,6 +181,10 @@ if [[ "$products" == "0" || "${RESEED:-0}" == "1" ]]; then
 else
 	echo "==> Catalog already seeded ($products products); RESEED=1 to reset it"
 fi
+
+echo "==> Account pages (/login/, /register/)"
+# Added after the live site was seeded; idempotent, so it runs on every deploy.
+wp eval-file "$SRC/seed/account-pages.php"
 
 echo "==> Public demo: no order e-mails to shoppers"
 # Shoppers type addresses that may belong to real people. The admin new-order

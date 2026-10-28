@@ -24,6 +24,8 @@
 			<property name="text_domain" type="array">
 				<element value="nova-store"/>
 				<element value="nova-store-core"/>
+				<!-- Login/register templates reuse WooCommerce strings (translated by its language pack). -->
+				<element value="woocommerce"/>
 			</property>
 		</properties>
 	</rule>
