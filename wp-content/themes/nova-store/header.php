@@ -83,7 +83,8 @@ $nova_threshold = nova_store_free_shipping_threshold();
 				</div>
 			<?php endif; ?>
 			<?php if ( function_exists( 'wc_get_page_permalink' ) ) : ?>
-				<a class="header-action" href="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>">
+				<?php // The plugin points this at the Log in page for visitors. ?>
+				<a class="header-action" href="<?php echo esc_url( apply_filters( 'nova_store_account_url', wc_get_page_permalink( 'myaccount' ) ) ); ?>">
 					<?php echo nova_store_icon( 'user' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<span class="screen-reader-text"><?php esc_html_e( 'My account', 'nova-store' ); ?></span>
 				</a>
