@@ -1679,6 +1679,21 @@ textarea:focus,
 	padding: 1.5rem;
 }
 
+/* Log in and Create account pages: one narrow form each */
+.nova-auth {
+	max-width: 480px;
+}
+
+.nova-auth__switch {
+	margin-top: 1.25rem;
+	color: var(--muted);
+}
+
+.nova-auth__switch a {
+	color: var(--ink);
+	font-weight: 600;
+}
+
 /* Login + register: names side by side, quieter privacy note */
 .woocommerce form.register .nova-register-names {
 	display: grid;
